@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  web:
+    build: .
+    container_name: yt2mp3
+    ports:
+      - "5000:5000"
+    volumes:
+      # map your host mp3s folder into the container
+      - ./mp3s:/app/mp3s
+      # map your cookies.txt (read-only) so yt-dlp can use it
+      - ./cookies.txt:/app/cookies.txt:ro
+    # (optional) env var you could reference in app.py
+    environment:
+      - FLASK_ENV=production
