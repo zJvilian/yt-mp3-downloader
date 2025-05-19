@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>YouTube→MP3</title>
+</head>
+<body>
+  <h1>YouTube → MP3</h1>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+      {% for msg in messages %}
+        <li>{{ msg }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <form method="post">
+    <input type="url" name="url" placeholder="YouTube URL" required style="width:300px">
+    <button type="submit" name="action" value="download">Download MP3</button>
+    <button type="submit" name="action" value="formats">List Formats</button>
+  </form>
+
+  <h2>Downloaded MP3s</h2>
+  <ul>
+    {% for f in files %}
+      <li><a href="{{ url_for('serve_mp3', filename=f) }}">{{ f }}</a></li>
+    {% else %}
+      <li><em>No files yet.</em></li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
