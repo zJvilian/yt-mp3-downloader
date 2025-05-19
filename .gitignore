@@ -1,0 +1,29 @@
+# Byte‐compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# IDE/project files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Flask / Python logs
+*.log
+
+# yt-dl cookies and downloaded media
+mp3s/
+*.mp3
+*.mp4
+
+# Docker
+docker-compose.override.yml
