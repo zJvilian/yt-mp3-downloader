@@ -10,6 +10,6 @@ services:
       - ./mp3s:/app/mp3s
       # map your cookies.txt (read-only) so yt-dlp can use it
       - ./cookies.txt:/app/cookies.txt:ro
-    # (optional) env var you could reference in app.py
+    # (optional) env var you could reference in app.py 
     environment:
       - FLASK_ENV=production
