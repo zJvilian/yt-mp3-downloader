@@ -24,6 +24,3 @@ Thumbs.db
 mp3s/
 *.mp3
 *.mp4
-
-# Docker
-docker-compose.override.yml
