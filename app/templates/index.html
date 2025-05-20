@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>YouTube Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- YouTube-style fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap"
+    rel="stylesheet"
+  >
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="yt-body">
+
+  <!-- Top bar -->
+  <header class="yt-header">
+    <div class="yt-container">
+      <a href="/" class="yt-logo">▶ YouTube Downloader</a>
+    </div>
+  </header>
+
+  <main class="yt-container">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages() %}
+      {% for msg in messages %}
+        <div class="yt-alert">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Download form -->
+    <form method="post" class="yt-form">
+      <input
+        type="url" name="url"
+        placeholder="Enter YouTube URL"
+        class="yt-input"
+        required
+      >
+      <select name="format" class="yt-select">
+        <option value="mp3">MP3 (audio)</option>
+        <option value="mp4">MP4 (video)</option>
+      </select>
+      <button class="yt-button">Download</button>
+    </form>
+
+    <!-- Downloaded MP3s -->
+    <section>
+      <h2 class="yt-section-title">Downloaded MP3s</h2>
+      <ul class="yt-list">
+        {% for f in mp3_files %}
+          <li class="yt-list-item">
+            <button
+              class="yt-btn yt-btn-play"
+              data-audio-id="audio-{{ loop.index }}"
+              aria-label="Play/Pause"
+            >▶</button>
+            <audio id="audio-{{ loop.index }}" src="{{ url_for('serve_mp3', filename=f) }}"></audio>
+            <span class="yt-filename">{{ f }}</span>
+            <a
+              href="{{ url_for('serve_mp3', filename=f) }}"
+              download
+              class="yt-btn yt-btn-download"
+              aria-label="Download"
+            >⬇</a>
+          </li>
+        {% else %}
+          <li class="yt-list-empty">No MP3s yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <!-- Downloaded MP4s -->
+    <section>
+      <h2 class="yt-section-title">Downloaded MP4s</h2>
+      <ul class="yt-list">
+        {% for f in mp4_files %}
+          <li class="yt-list-item">
+            <span class="yt-icon">🎬</span>
+            <span class="yt-filename">{{ f }}</span>
+            <a
+              href="{{ url_for('serve_mp4', filename=f) }}"
+              download
+              class="yt-btn yt-btn-download"
+              aria-label="Download"
+            >⬇</a>
+          </li>
+        {% else %}
+          <li class="yt-list-empty">No MP4s yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    // Toggle play/pause for MP3 buttons
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".yt-btn-play").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const audio = document.getElementById(btn.dataset.audioId);
+          if (!audio) return;
+          if (audio.paused) {
+            audio.play();
+            btn.textContent = "⏸";
+          } else {
+            audio.pause();
+            btn.textContent = "▶";
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
