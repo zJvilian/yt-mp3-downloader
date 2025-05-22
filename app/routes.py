@@ -1,9 +1,14 @@
 import os
+import uuid
+import threading
 from flask import (
-    current_app, render_template, request,
+    current_app, render_template, request, jsonify,
     redirect, url_for, flash, send_from_directory
 )
-from .downloader import download_youtube
+from .downloader import download_youtube, cancel_download
+
+# Track active downloads
+active_downloads = {}
 
 def register_routes(app):
 
@@ -25,24 +30,50 @@ def register_routes(app):
                 output_dir = app.config["OUTPUT_DIR_MP3"]
                 to_mp3 = True
 
-            try:
-                cwd = os.getcwd()
-                os.chdir(output_dir)
-
-                download_youtube(url, to_mp3=to_mp3)
-                flash(f"✅ {fmt.upper()} download complete!")
-            except Exception as e:
-                flash(f"⚠️ Download failed: {e}")
-            finally:
-                os.chdir(cwd)
-
+            # Generate a unique ID for this download
+            download_id = str(uuid.uuid4())
+            active_downloads[download_id] = {
+                "url": url,
+                "format": fmt,
+                "status": "downloading"
+            }
+            
+            # Run download in background thread
+            def download_task():
+                try:
+                    cwd = os.getcwd()
+                    os.chdir(output_dir)
+                    download_youtube(url, to_mp3=to_mp3, download_id=download_id)
+                    flash(f"✅ {fmt.upper()} download complete!")
+                except Exception as e:
+                    flash(f"⚠️ Download failed: {e}")
+                finally:
+                    os.chdir(cwd)
+                    if download_id in active_downloads:
+                        active_downloads[download_id]["status"] = "completed"
+            
+            thread = threading.Thread(target=download_task)
+            thread.daemon = True
+            thread.start()
+            
             return redirect(url_for("index"))
 
         # list existing files
         mp3_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP3"]))
         mp4_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP4"]))
-        return render_template("index.html", mp3_files=mp3_files, mp4_files=mp4_files)
+        return render_template("index.html", 
+                              mp3_files=mp3_files, 
+                              mp4_files=mp4_files,
+                              active_downloads=active_downloads)
 
+    @app.route("/cancel/<download_id>", methods=["POST"])
+    def cancel_download_route(download_id):
+        if download_id in active_downloads:
+            cancel_download(download_id)
+            active_downloads[download_id]["status"] = "cancelled"
+            return jsonify({"success": True})
+        return jsonify({"success": False, "error": "Download not found"}), 404
+        
     @app.route("/mp3s/<path:filename>")
     def serve_mp3(filename):
         return send_from_directory(
@@ -58,3 +89,25 @@ def register_routes(app):
             filename,
             as_attachment=True
         )
+
+    @app.route("/delete/<filetype>/<path:filename>", methods=["POST"])
+    def delete_file(filetype, filename):
+        """Delete a file from the server"""
+        if filetype not in ["mp3", "mp4"]:
+            return jsonify({"success": False, "error": "Invalid file type"}), 400
+            
+        # Get the directory based on file type
+        directory = current_app.config["OUTPUT_DIR_MP3"] if filetype == "mp3" else current_app.config["OUTPUT_DIR_MP4"]
+        
+        # Build the full path
+        filepath = os.path.join(directory, filename)
+        
+        # Check if file exists and delete it
+        if os.path.exists(filepath):
+            try:
+                os.remove(filepath)
+                return jsonify({"success": True})
+            except OSError as e:
+                return jsonify({"success": False, "error": str(e)}), 500
+        else:
+            return jsonify({"success": False, "error": "File not found"}), 404

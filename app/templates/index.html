@@ -17,7 +17,7 @@
   <!-- Top bar -->
   <header class="yt-header">
     <div class="yt-container">
-      <a href="/" class="yt-logo">▶ YouTube Downloader</a>
+      <a href="/" class="yt-logo">YouTube Downloader</a>
     </div>
   </header>
 
@@ -44,12 +44,33 @@
       <button class="yt-button">Download</button>
     </form>
 
+    <!-- Active Downloads -->
+    <section id="active-downloads-section" {% if not active_downloads %}style="display: none"{% endif %}>
+      <h2 class="yt-section-title">Downloads in Progress</h2>
+      <ul class="yt-list" id="active-downloads-list">
+        {% for id, download in active_downloads.items() %}
+          {% if download.status == "downloading" %}
+            <li class="yt-list-item" id="download-{{ id }}">
+              <span class="yt-icon">⏳</span>
+              <span class="yt-filename">{{ download.url }} ({{ download.format }})</span>
+              <button 
+                class="yt-btn yt-btn-cancel" 
+                data-download-id="{{ id }}"
+                aria-label="Cancel"
+                onclick="cancelDownload('{{ id }}')"
+              >✖</button>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </section>
+
     <!-- Downloaded MP3s -->
     <section>
       <h2 class="yt-section-title">Downloaded MP3s</h2>
       <ul class="yt-list">
         {% for f in mp3_files %}
-          <li class="yt-list-item">
+          <li class="yt-list-item" id="mp3-item-{{ loop.index }}">
             <button
               class="yt-btn yt-btn-play"
               data-audio-id="audio-{{ loop.index }}"
@@ -63,6 +84,11 @@
               class="yt-btn yt-btn-download"
               aria-label="Download"
             >⬇</a>
+            <button
+              class="yt-btn yt-btn-delete"
+              onclick="deleteFile('mp3', '{{ f }}', 'mp3-item-{{ loop.index }}')"
+              aria-label="Delete"
+            >🗑️</button>
           </li>
         {% else %}
           <li class="yt-list-empty">No MP3s yet.</li>
@@ -75,7 +101,7 @@
       <h2 class="yt-section-title">Downloaded MP4s</h2>
       <ul class="yt-list">
         {% for f in mp4_files %}
-          <li class="yt-list-item">
+          <li class="yt-list-item" id="mp4-item-{{ loop.index }}">
             <span class="yt-icon">🎬</span>
             <span class="yt-filename">{{ f }}</span>
             <a
@@ -84,6 +110,11 @@
               class="yt-btn yt-btn-download"
               aria-label="Download"
             >⬇</a>
+            <button
+              class="yt-btn yt-btn-delete"
+              onclick="deleteFile('mp4', '{{ f }}', 'mp4-item-{{ loop.index }}')"
+              aria-label="Delete"
+            >🗑️</button>
           </li>
         {% else %}
           <li class="yt-list-empty">No MP4s yet.</li>
@@ -95,21 +126,130 @@
   <script>
     // Toggle play/pause for MP3 buttons
     document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll(".yt-btn-play").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const audio = document.getElementById(btn.dataset.audioId);
-          if (!audio) return;
+      const playButtons = document.querySelectorAll(".yt-btn-play");
+      console.log(`Found ${playButtons.length} play buttons`);
+      
+      playButtons.forEach(btn => {
+        const audioId = btn.getAttribute('data-audio-id');
+        const audio = document.getElementById(audioId);
+        
+        if (!audio) return;
+        
+        // Pre-load the audio
+        audio.load();
+        
+        // Reset state when audio ends
+        audio.addEventListener('ended', () => {
+          btn.textContent = "▶";
+          btn.classList.remove('playing');
+        });
+        
+        // Handle play/pause toggle
+        btn.addEventListener("click", function(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          console.log(`Play button clicked for ${audioId}, Audio paused: ${audio.paused}`);
+          
+          // Stop all other playing audios first
+          document.querySelectorAll('audio').forEach(a => {
+            if (a.id !== audioId && !a.paused) {
+              a.pause();
+              const otherBtn = document.querySelector(`[data-audio-id="${a.id}"]`);
+              if (otherBtn) {
+                otherBtn.textContent = "▶";
+                otherBtn.classList.remove('playing');
+              }
+            }
+          });
+          
+          // Toggle current audio
           if (audio.paused) {
-            audio.play();
-            btn.textContent = "⏸";
+            btn.textContent = "⏳";
+            
+            audio.play().then(() => {
+              btn.textContent = "⏸";
+              btn.classList.add('playing');
+            }).catch(err => {
+              console.error("Error playing audio:", err);
+              btn.textContent = "▶";
+              alert("Unable to play audio. This may be due to browser autoplay restrictions or a network issue.");
+            });
           } else {
             audio.pause();
             btn.textContent = "▶";
+            btn.classList.remove('playing');
           }
         });
       });
     });
+    
+    // Delete file function - FIXED SYNTAX ERROR
+    function deleteFile(type, filename, itemId) {
+      if (confirm(`Are you sure you want to delete ${filename}?`)) {
+        fetch(`/delete/${type}/${encodeURIComponent(filename)}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Remove the element from the DOM
+            const element = document.getElementById(itemId);
+            if (element) { // FIXED: proper parenthesis
+              element.style.animation = 'fadeOut 0.3s ease-in-out';
+              setTimeout(() => element.remove(), 300);
+            }
+          } else {
+            alert(`Error deleting file: ${data.error || 'Unknown error'}`);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Failed to delete file. Please try again.');
+        });
+      }
+    }
+    
+    // Add fade out animation for deleted items
+    document.head.insertAdjacentHTML('beforeend', `
+      <style>
+        @keyframes fadeOut {
+          from { opacity: 1; transform: translateY(0); }
+          to { opacity: 0; transform: translateY(-10px); }
+        }
+      </style>
+    `);
+    
+    // Function for download cancellation
+    function cancelDownload(downloadId) {
+      if (confirm("Are you sure you want to cancel this download?")) {
+        fetch(`/cancel/${downloadId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Remove the download from the list
+            const element = document.getElementById(`download-${downloadId}`);
+            if (element) {
+              element.remove();
+            }
+          } else {
+            alert("Failed to cancel download.");
+          }
+        })
+        .catch(error => {
+          console.error("Error cancelling download:", error);
+          alert("Error cancelling download. See console for details.");
+        });
+      }
+    }
   </script>
-
 </body>
 </html>

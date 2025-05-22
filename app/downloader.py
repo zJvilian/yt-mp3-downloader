@@ -3,10 +3,28 @@ import glob
 import yt_dlp
 from .config import Config
 
-def download_youtube(url: str, to_mp3: bool = True):
+# Track active yt-dlp instances by download_id
+_active_ydl = {}
+
+def cancel_download(download_id):
+    """Cancel a download in progress"""
+    if download_id in _active_ydl:
+        ydl = _active_ydl[download_id]
+        if hasattr(ydl, '_finish_multiline_status'):
+            ydl._finish_multiline_status()
+        ydl.interrupt = True
+        return True
+    return False
+
+def download_youtube(url: str, to_mp3: bool = True, download_id: str = None):
     """
     Download a YouTube URL as MP3 (with embedded cover & metadata)
     or MP4 (video). Filenames use only the title + ext, no IDs or literals.
+    
+    Args:
+        url: YouTube URL to download
+        to_mp3: Whether to convert to MP3 (True) or keep as MP4 (False)
+        download_id: Optional ID to track this download for cancellation
     """
     # template: just title + extension
     outtmpl = "%(title)s.%(ext)s"
@@ -53,7 +71,16 @@ def download_youtube(url: str, to_mp3: bool = True):
 
     # run the download
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+        # Track this download if an ID was provided
+        if download_id:
+            _active_ydl[download_id] = ydl
+            
+        try:
+            ydl.download([url])
+        finally:
+            # Clean up tracking
+            if download_id and download_id in _active_ydl:
+                del _active_ydl[download_id]
 
     # cleanup any standalone thumbnail files
     for ext in ("jpg", "webp"):
