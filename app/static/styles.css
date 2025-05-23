@@ -1,26 +1,41 @@
 /* ───────────────────────────────── Modern YouTube-style theme ─────────────────────── */
 
 :root {
+  /* Common variables */
   --primary: #FF0000;
   --primary-hover: #D90000;
-  --surface: #ffffff;
-  --surface-hover: #f5f5f5;
-  --background: #f9f9f9;
-  --text-primary: #0F0F0F;
-  --text-secondary: #606060;
-  --border: #e0e0e0;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
-  --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
   --border-radius: 8px;
   --spacing: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+  
+  /* Light theme variables (default) */
+  --bg-color: #ffffff;
+  --surface-color: #f9f9f9;
+  --text-color: #0f0f0f;
+  --text-secondary: #606060;
+  --border-color: #cccccc;
+  --accent-color: #ff0000;
+  --hover-bg: #f0f0f0;
+}
+
+/* Dark theme styles */
+[data-theme="dark"] {
+  --bg-color: #0f0f0f;
+  --surface-color: #1f1f1f;
+  --text-color: #ffffff;
+  --text-secondary: #aaaaaa;
+  --border-color: #333333;
+  --accent-color: #ff0000;
+  --hover-bg: #333333;
 }
 
 /* Base */
 body.yt-body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
-  background-color: var(--background);
-  color: var(--text-primary);
+  background-color: var(--bg-color); /* Use the theme variable instead of hard-coded color */
+  color: var(--text-color); /* Also update this to use the correct variable */
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -42,6 +57,13 @@ body.yt-body {
   top: 0;
   z-index: 10;
   border-bottom: 1px solid var(--border);
+}
+
+.yt-header .yt-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
 }
 
 .yt-logo {
@@ -216,7 +238,7 @@ body.yt-body {
 /* Play, Download and Cancel buttons */
 .yt-btn {
   border: none;
-  background: #f0f0f0;
+  background: var(--bg-color);
   border-radius: 50%;
   width: 36px;
   height: 36px;
@@ -248,19 +270,21 @@ body.yt-body {
 }
 
 .yt-btn-download {
-  color: var(--text-primary);
-  background: #f0f0f0;
+  color: var(--text-color);
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
 }
 
 .yt-btn-download:hover {
-  background: #e0e0e0;
+  background: var(--hover-bg);
 }
 
 /* Delete button */
 .yt-btn-delete {
-  background: #f0f0f0;
-  color: #888;
+  background: var(--bg-color);
+  color: var(--text-secondary);
   transition: all 0.2s;
+  border: 1px solid var(--border-color);
 }
 
 .yt-btn-delete:hover {
@@ -306,4 +330,68 @@ audio {
   .yt-button {
     width: 100%;
   }
+}
+
+/* Apply theme variables to existing elements */
+.yt-body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.yt-header {
+  background-color: var(--surface-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.yt-form {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+}
+
+.yt-input, .yt-select {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.yt-input:focus, .yt-select:focus {
+  border-color: var(--accent-color);
+}
+
+.yt-list-item {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+}
+
+.yt-list-item:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Theme toggle button styles */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: all 0.3s ease;
+  margin-left: auto; /* Push to the right */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle:hover {
+  background-color: var(--hover-bg);
+}
+
+.theme-toggle .sun-icon,
+.theme-toggle .moon-icon {
+  font-size: 16px;
+  transition: all 0.3s ease;
 }
