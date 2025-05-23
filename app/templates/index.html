@@ -18,6 +18,10 @@
   <header class="yt-header">
     <div class="yt-container">
       <a href="/" class="yt-logo">YouTube Downloader</a>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
+        <span class="sun-icon">☀️</span>
+        <span class="moon-icon">🌙</span>
+      </button>
     </div>
   </header>
 
@@ -249,6 +253,64 @@
           alert("Error cancelling download. See console for details.");
         });
       }
+    }
+
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    
+    // Check for saved theme preference or default to system preference
+    function getInitialTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        return savedTheme;
+      }
+      
+      // Check system preference
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      
+      return 'light';
+    }
+    
+    // Apply theme
+    function applyTheme(theme) {
+      body.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      
+      // Update button appearance
+      const sunIcon = themeToggle.querySelector('.sun-icon');
+      const moonIcon = themeToggle.querySelector('.moon-icon');
+      
+      if (theme === 'dark') {
+        sunIcon.style.display = 'inline';
+        moonIcon.style.display = 'none';
+      } else {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'inline';
+      }
+    }
+    
+    // Initialize theme
+    const initialTheme = getInitialTheme();
+    applyTheme(initialTheme);
+    
+    // Toggle theme on button click
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+    });
+    
+    // Listen for system theme changes
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        // Only auto-switch if user hasn't manually set a preference
+        if (!localStorage.getItem('theme')) {
+          applyTheme(e.matches ? 'dark' : 'light');
+        }
+      });
     }
   </script>
 </body>
