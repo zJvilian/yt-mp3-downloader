@@ -256,8 +256,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
+  // Update the attachPlayButtonHandler function to skip showing/hiding the player
   function attachPlayButtonHandler(button) {
-    // Copy event handler from player.js
+    // Similar to the player.js implementation but without showing/hiding the player container
+    // As it's now always visible
+    
     button.addEventListener("click", function(event) {
       event.preventDefault();
       event.stopPropagation();
@@ -265,7 +268,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const audioSrc = this.getAttribute('data-audio-src');
       const audioTitle = this.getAttribute('data-audio-title');
       const globalPlayer = document.getElementById("global-audio-player");
-      const globalPlayerContainer = document.getElementById("global-player-container");
       const nowPlayingTitle = document.getElementById("now-playing-title");
       
       // If this is already playing, toggle play/pause
@@ -281,7 +283,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // Otherwise, load and play the new track
       globalPlayer.src = audioSrc;
       nowPlayingTitle.textContent = audioTitle;
-      globalPlayerContainer.style.display = 'flex';
       
       // Show loading state
       this.innerHTML = `

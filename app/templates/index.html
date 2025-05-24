@@ -68,27 +68,32 @@
       <button class="yt-button">Download</button>
     </form>
 
-    <!-- Global Audio Player (initially hidden) -->
-    <div id="global-player-container" style="display: none">
+    <!-- Global Player HTML Structure -->
+    <div id="global-player-container">
       <div class="yt-global-player-inner">
-        <div class="yt-global-player-art">
-          <div class="yt-global-player-icon">🎵</div>
+        <div class="yt-global-player-art">🎵</div>
+        <div class="yt-global-player-info">
+          <h3 class="yt-global-player-title" id="now-playing-title">Select a track to play</h3>
+          <div class="yt-global-player-progress">
+            <span class="yt-global-player-time" id="current-time">0:00</span>
+            <div class="yt-progress">
+              <div class="yt-progress-bar" id="audio-progress"></div>
+            </div>
+            <span class="yt-global-player-time" id="duration">0:00</span>
+          </div>
         </div>
-        <div class="yt-global-player-content">
-          <div class="yt-global-player-info">
-            <div class="yt-global-player-title-container">
-              <span id="now-playing-title">No song selected</span>
-              <div class="yt-global-player-time">
-                <span id="current-time">0:00</span> / <span id="duration-time">0:00</span>
-              </div>
+        <div class="yt-global-player-controls">
+          <button class="yt-player-btn yt-player-btn-play" id="play-pause-global">▶</button>
+          <div class="yt-volume-control">
+            <button class="yt-player-btn" id="mute-button">🔊</button>
+            <div class="yt-progress" id="volume-slider">
+              <div class="yt-progress-bar" style="width: 100%"></div>
             </div>
           </div>
-          <audio id="global-audio-player" class="yt-global-audio-player" controls></audio>
-        </div>
-        <div class="yt-global-player-actions">
-          <button id="pin-player-button" class="yt-btn" title="Pin player to bottom">📌</button>
+          <!-- Removed close and pin buttons -->
         </div>
       </div>
+      <audio id="global-audio-player"></audio>
     </div>
 
     <!-- Active Downloads -->
