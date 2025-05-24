@@ -89,10 +89,11 @@
 
 .loader {
  position: relative;
- width: 24px;
- height: 24px;
- transform: rotate(45deg) scale(0.35);
+ width: 22px;          /* Reduced from 24px */
+ height: 22px;         /* Reduced from 24px */
+ transform: rotate(45deg) scale(0.32); /* Smaller scale from 0.35 */
  margin-right: 10px;
+ margin-top: -3px;     /* Added to lift it up */
  flex-shrink: 0;
  display: inline-flex;
  align-items: center;
@@ -103,8 +104,8 @@
  position: absolute;
  top: 0;
  left: 0;
- width: 20px;
- height: 20px;
+ width: 18px;          /* Reduced from 20px */
+ height: 18px;         /* Reduced from 20px */
  margin: 2px;
  border-radius: 0px;
  background: var(--primary);
@@ -148,11 +149,11 @@
 
 /* Add a small version of the loader for buttons */
 .loader-btn {
-  transform: rotate(45deg) scale(0.15);
-  width: 14px;
-  height: 14px;
+  transform: rotate(45deg) scale(0.13); /* Slightly smaller scale from 0.15 */
+  width: 12px;          /* Reduced from 14px */
+  height: 12px;         /* Reduced from 14px */
+  margin-top: -2px;     /* Added to lift it up */
   display: inline-block;
-  margin: 0;
   padding: 0;
   vertical-align: middle;
 }
