@@ -28,10 +28,11 @@
   margin: 0;
   display: grid;
   gap: 12px;
-  max-height: 1000px;
-  overflow: hidden;
+  max-height: 60vh; /* Limit to 60% of viewport height */
+  overflow-y: auto; /* Add vertical scrolling */
   transition: max-height 0.3s ease-in-out;
-  padding-top: 12px; /* Add padding at the top of the list */
+  padding-top: 12px;
+  padding-right: 8px; /* Add padding for scrollbar */
 }
 
 .yt-list-item {
@@ -126,6 +127,25 @@
   max-height: 0;
   padding-top: 0;
   overflow: hidden;
+}
+
+/* Style the scrollbar for better appearance */
+.yt-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.yt-list::-webkit-scrollbar-track {
+  background: var(--bg-color);
+  border-radius: 10px;
+}
+
+.yt-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 10px;
+}
+
+.yt-list::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
 
 /* Responsive adjustments */
