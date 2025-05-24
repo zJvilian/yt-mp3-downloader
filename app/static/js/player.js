@@ -5,8 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const globalPlayerContainer = document.getElementById("global-player-container");
   const nowPlayingTitle = document.getElementById("now-playing-title");
   const currentTimeLabel = document.getElementById("current-time");
-  const durationTimeLabel = document.getElementById("duration-time");
-  const pinPlayerButton = document.getElementById("pin-player-button");
+  const durationTimeLabel = document.getElementById("duration");
+  const progressBar = document.getElementById("audio-progress");
+  const progressContainer = document.querySelector(".yt-progress");
+  const volumeSlider = document.getElementById("volume-slider");
+  const muteButton = document.getElementById("mute-button");
+  const playPauseGlobal = document.getElementById("play-pause-global");
+  
   let currentlyPlaying = null;
   
   // Function to update UI when a song is playing
@@ -24,22 +29,89 @@ document.addEventListener("DOMContentLoaded", () => {
       const listItem = button.closest('.yt-list-item');
       if (listItem) listItem.classList.add('playing');
     }
+    
+    // Also update the global play/pause button
+    if (playPauseGlobal) {
+      playPauseGlobal.textContent = isPlaying ? "⏸" : "▶";
+    }
   }
   
   // Format time in MM:SS format
   function formatTime(seconds) {
+    if (isNaN(seconds)) return "0:00";
+    
     seconds = Math.floor(seconds);
     const minutes = Math.floor(seconds / 60);
     seconds = seconds % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
   
-  // Update time display
+  // Update time display and progress bar
   function updateTimeDisplay() {
     if (!globalPlayer.duration) return;
     
-    currentTimeLabel.textContent = formatTime(globalPlayer.currentTime);
-    durationTimeLabel.textContent = formatTime(globalPlayer.duration);
+    const currentTime = globalPlayer.currentTime || 0;
+    const duration = globalPlayer.duration || 0;
+    
+    // Update text labels
+    currentTimeLabel.textContent = formatTime(currentTime);
+    durationTimeLabel.textContent = formatTime(duration);
+    
+    // Update progress bar
+    const percent = (currentTime / duration) * 100;
+    if (progressBar) {
+      progressBar.style.width = `${percent}%`;
+    }
+  }
+  
+  // Handle progress bar clicks
+  if (progressContainer) {
+    progressContainer.addEventListener('click', (e) => {
+      const bounds = progressContainer.getBoundingClientRect();
+      const x = e.clientX - bounds.left;
+      const percent = x / bounds.width;
+      
+      globalPlayer.currentTime = percent * globalPlayer.duration;
+      updateTimeDisplay();
+    });
+  }
+  
+  // Handle global play/pause button
+  if (playPauseGlobal) {
+    playPauseGlobal.addEventListener('click', () => {
+      if (globalPlayer.paused) {
+        globalPlayer.play();
+      } else {
+        globalPlayer.pause();
+      }
+    });
+  }
+  
+  // Handle volume slider
+  if (volumeSlider) {
+    const volumeBar = volumeSlider.querySelector('.yt-progress-bar');
+    
+    volumeSlider.addEventListener('click', (e) => {
+      const bounds = volumeSlider.getBoundingClientRect();
+      const x = e.clientX - bounds.left;
+      const volumeLevel = Math.max(0, Math.min(1, x / bounds.width));
+      
+      globalPlayer.volume = volumeLevel;
+      volumeBar.style.width = `${volumeLevel * 100}%`;
+      
+      // Update mute button state
+      if (muteButton) {
+        muteButton.textContent = volumeLevel === 0 ? '🔇' : '🔊';
+      }
+    });
+  }
+  
+  // Handle mute button
+  if (muteButton) {
+    muteButton.addEventListener('click', () => {
+      globalPlayer.muted = !globalPlayer.muted;
+      muteButton.textContent = globalPlayer.muted ? '🔇' : '🔊';
+    });
   }
   
   // Handle player events directly from the audio element
@@ -54,6 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
   globalPlayer.addEventListener('ended', () => {
     updatePlayingState(currentlyPlaying, false);
   });
+  
+  // Handle timeupdate for progress bar and time display
+  globalPlayer.addEventListener('timeupdate', updateTimeDisplay);
   
   // Set up play button click handlers
   playButtons.forEach(button => {
@@ -76,8 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Otherwise, load and play the new track
       globalPlayer.src = audioSrc;
-      nowPlayingTitle.textContent = audioTitle;
-      globalPlayerContainer.style.display = 'flex';
+      if (nowPlayingTitle) nowPlayingTitle.textContent = audioTitle;
       
       // Update the currently playing reference
       currentlyPlaying = this;
@@ -118,35 +192,4 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   });
-  
-  // Update current time and duration display
-  globalPlayer.addEventListener('loadedmetadata', () => {
-    durationTimeLabel.textContent = formatTime(globalPlayer.duration);
-  });
-  
-  globalPlayer.addEventListener('timeupdate', () => {
-    currentTimeLabel.textContent = formatTime(globalPlayer.currentTime);
-  });
-  
-  // Pin player to bottom feature
-  pinPlayerButton.addEventListener('click', () => {
-    const isPinned = globalPlayerContainer.classList.toggle('pinned');
-    pinPlayerButton.textContent = isPinned ? '📍' : '📌';
-    pinPlayerButton.title = isPinned ? 'Unpin player' : 'Pin player to bottom';
-    
-    // Save preference to localStorage
-    localStorage.setItem('player-pinned', isPinned ? 'true' : 'false');
-    
-    // If pinned, ensure player is visible
-    if (isPinned && globalPlayerContainer.style.display === 'none') {
-      globalPlayerContainer.style.display = 'block';
-    }
-  });
-  
-  // Restore pinned state if previously set
-  if (localStorage.getItem('player-pinned') === 'true') {
-    globalPlayerContainer.classList.add('pinned');
-    pinPlayerButton.textContent = '📍';
-    pinPlayerButton.title = 'Unpin player';
-  }
 });

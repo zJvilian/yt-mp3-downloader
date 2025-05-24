@@ -1,96 +1,193 @@
 /* Audio Player Styles */
 
-/* Global player styling */
+/* Global player styling - Always fixed at bottom */
 #global-player-container {
-  margin: 1.5rem 0;
-  padding: 1rem;
-  background: var(--surface-color);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-md);
-  animation: fadeIn 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
-}
-
-#global-player-container.pinned {
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
-  z-index: 100;
+  width: 100%;
   margin: 0;
-  border-radius: 0;
-  border-bottom: none;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  z-index: 1000; /* Increased to ensure it's above everything */
+  background-color: var(--surface-color);
+  box-shadow: var(--shadow-lg);
+  border-top: 1px solid var(--border-color);
+  box-sizing: border-box;
+  display: flex; /* Always visible */
 }
 
+/* Adjust main container to add padding at bottom to prevent content from being hidden behind player */
+.yt-container {
+  padding-bottom: 90px; /* Adjust based on your player height */
+}
+
+/* Adjust player layout for better spacing without pin/close buttons */
 .yt-global-player-inner {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 1rem;
+  padding: 12px;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-.yt-global-player-art {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--border-radius);
-  background: var(--primary);
+/* Player controls - now with more space since we removed buttons */
+.yt-global-player-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto; /* Push to the right */
+}
+
+/* Pin button - fixed position at right side */
+.yt-global-player-pin {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1001;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  font-size: 16px;
+}
+
+.yt-global-player-pin:hover {
+  background-color: var(--hover-color);
+}
+
+/* Player art */
+.yt-global-player-art {
+  width: 64px;
+  height: 64px;
   flex-shrink: 0;
-  overflow: hidden;
-}
-
-.yt-global-player-icon {
-  font-size: 2rem;
+  background-color: var(--primary);
   color: white;
-}
-
-.yt-global-player-content {
-  flex: 1;
-  min-width: 0; /* Important for text overflow to work */
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.yt-global-audio-player {
-  width: 100%;
-  height: 36px;
   border-radius: var(--border-radius);
-  background-color: var(--bg-color);
-}
-
-.yt-global-player-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  font-size: 32px;
 }
 
-.yt-global-player-title-container {
+/* Player info and controls */
+.yt-global-player-info {
   flex: 1;
-  min-width: 0;
+  min-width: 0; /* Important for text overflow */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: calc(100% - 200px); /* Leave space for controls */
 }
 
-#now-playing-title {
-  display: block;
+.yt-global-player-title {
   font-weight: 500;
-  color: var(--text-color);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
 }
 
 .yt-global-player-time {
-  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  font-size: 0.9rem;
 }
 
-.yt-global-player-actions {
+/* Progress bar container */
+.yt-global-player-progress {
+  flex: 1;
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+/* Actual progress bar */
+.yt-progress {
+  width: 100%;
+  height: 4px;
+  background-color: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+}
+
+.yt-progress-bar {
+  height: 100%;
+  background-color: var(--primary);
+  width: 0;
+  border-radius: 2px;
+}
+
+/* Volume control */
+.yt-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100px;
+}
+
+/* Close button */
+.yt-global-player-close {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.yt-global-player-close:hover {
+  background-color: var(--hover-color);
+}
+
+/* Control buttons */
+.yt-player-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  font-size: 18px;
+}
+
+.yt-player-btn:hover {
+  background-color: var(--hover-color);
+}
+
+.yt-player-btn-play {
+  background-color: var(--primary);
+  color: white;
+}
+
+.yt-player-btn-play:hover {
+  background-color: var(--primary-hover);
 }
 
 /* Highlight the currently playing item more distinctly */
@@ -114,18 +211,29 @@
   font-weight: bold;
 }
 
+/* Media queries for responsiveness */
 @media (max-width: 640px) {
   .yt-global-player-inner {
-    flex-direction: column;
-    align-items: stretch;
+    padding: 8px;
   }
   
   .yt-global-player-art {
-    width: 100%;
-    height: 80px;
+    width: 48px;
+    height: 48px;
   }
   
-  #global-player-container.pinned .yt-global-player-art {
-    display: none;
+  .yt-volume-control {
+    display: none; /* Hide volume on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .yt-global-player-time {
+    font-size: 0.8rem;
+  }
+  
+  .yt-player-btn {
+    width: 32px;
+    height: 32px;
   }
 }
