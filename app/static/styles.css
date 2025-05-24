@@ -188,18 +188,26 @@ body.yt-body {
   margin: 0;
   display: grid;
   gap: 12px;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  padding-top: 12px; /* Add padding at the top of the list */
 }
 
 .yt-list-item {
-  background: var(--surface);
-  padding: 1rem;
-  border-radius: var(--border-radius);
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  width: 100%;
+  gap: 8px;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
   transition: all 0.2s;
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-color);
 }
 
 .yt-list-item:hover {
@@ -222,8 +230,11 @@ body.yt-body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-primary);
+  color: var(--text-color); /* Use correct theme variable */
   font-weight: 400;
+  padding-right: 16px;
+  /* Remove the max-width constraint since we no longer have audio player in each item */
+  max-width: none;
 }
 
 /* Icons & buttons */
@@ -312,9 +323,134 @@ body.yt-body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Audio elements hidden */
-audio {
-  display: none;
+/* Global player styling */
+#global-player-container {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+#global-player-container.pinned {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin: 0;
+  border-radius: 0;
+  border-bottom: none;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.yt-global-player-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.yt-global-player-art {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--border-radius);
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.yt-global-player-icon {
+  font-size: 2rem;
+  color: white;
+}
+
+.yt-global-player-content {
+  flex: 1;
+  min-width: 0; /* Important for text overflow to work */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.yt-global-audio-player {
+  width: 100%;
+  height: 36px;
+  border-radius: var(--border-radius);
+  background-color: var(--bg-color);
+}
+
+.yt-global-player-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.yt-global-player-title-container {
+  flex: 1;
+  min-width: 0;
+}
+
+#now-playing-title {
+  display: block;
+  font-weight: 500;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.yt-global-player-time {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.yt-global-player-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Highlight the currently playing item more distinctly */
+.yt-list-item.playing {
+  background-color: var(--hover-bg);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+  position: relative;
+}
+
+.yt-list-item.playing::before {
+  content: "▶️ PLAYING";
+  position: absolute;
+  top: -12px; /* Move it slightly higher */
+  right: 10px;
+  font-size: 10px;
+  background: var(--primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+@media (max-width: 640px) {
+  .yt-global-player-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .yt-global-player-art {
+    width: 100%;
+    height: 80px;
+  }
+  
+  #global-player-container.pinned .yt-global-player-art {
+    display: none;
+  }
 }
 
 /* Responsive adjustments */
@@ -329,6 +465,30 @@ audio {
   
   .yt-button {
     width: 100%;
+  }
+}
+
+/* Responsive adjustments for audio player */
+@media (max-width: 768px) {
+  .yt-list-item {
+    flex-wrap: wrap;
+  }
+  
+  .yt-filename {
+    max-width: 100%;
+    width: 100%;
+    padding-right: 0;
+  }
+  
+  .yt-audio-player {
+    width: 100%;
+    order: 1;
+    margin: 8px 0;
+  }
+  
+  .yt-item-actions {
+    margin-left: auto;
+    margin-right: 0;
   }
 }
 
@@ -365,6 +525,18 @@ audio {
 
 .yt-list-item:hover {
   background-color: var(--hover-bg);
+}
+
+/* Action buttons container to keep them together */
+.yt-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; /* Push to the right side of the container */
+  margin-right: 0;
+  flex-shrink: 0; /* Prevent shrinking */
+  flex-basis: auto;
+  white-space: nowrap;
 }
 
 /* Theme toggle button styles */
@@ -414,16 +586,4 @@ audio {
 
 .collapsed .collapse-indicator {
   transform: rotate(-90deg);
-}
-
-.yt-list {
-  max-height: 1000px;
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
-}
-
-.yt-list.collapsed {
-  max-height: 0;
-  margin-top: 0;
-  margin-bottom: 0;
 }
