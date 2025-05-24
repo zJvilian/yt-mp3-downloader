@@ -2,26 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>YouTube Downloader</title>
+  <title>Universal Media Downloader</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- YouTube-style fonts -->
+  <!-- Fonts -->
   <link
     href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap"
     rel="stylesheet"
   >
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  
+  <!-- CSS files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
 </head>
 <body class="yt-body">
 
   <!-- Top bar -->
   <header class="yt-header">
     <div class="yt-container">
-      <a href="/" class="yt-logo">YouTube Downloader</a>
-      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
-        <span class="sun-icon">☀️</span>
-        <span class="moon-icon">🌙</span>
-      </button>
+      <a href="/" class="yt-logo">Universal Media Downloader</a>
+      <!-- Replace the existing theme toggle button with this new switch -->
+      <label class="switch" title="Toggle dark/light mode">
+        <input id="theme-checkbox" type="checkbox" />
+        <span class="slider">
+          <div class="star star_1"></div>
+          <div class="star star_2"></div>
+          <div class="star star_3"></div>
+          <svg viewBox="0 0 16 16" class="cloud_1 cloud">
+            <path
+              transform="matrix(.77976 0 0 .78395-299.99-418.63)"
+              fill="#fff"
+              d="m391.84 540.91c-.421-.329-.949-.524-1.523-.524-1.351 0-2.451 1.084-2.485 2.435-1.395.526-2.388 1.88-2.388 3.466 0 1.874 1.385 3.423 3.182 3.667v.034h12.73v-.006c1.775-.104 3.182-1.584 3.182-3.395 0-1.747-1.309-3.186-2.994-3.379.007-.106.011-.214.011-.322 0-2.707-2.271-4.901-5.072-4.901-2.073 0-3.856 1.202-4.643 2.925"
+            ></path>
+          </svg>
+        </span>
+      </label>
     </div>
   </header>
 
@@ -37,7 +55,7 @@
     <form method="post" class="yt-form">
       <input
         type="url" name="url"
-        placeholder="Enter YouTube URL"
+        placeholder="Enter URL from YouTube, SoundCloud, Vimeo, etc."
         class="yt-input"
         required
       >
@@ -56,7 +74,6 @@
         </div>
         <div class="yt-global-player-content">
           <div class="yt-global-player-info">
-            <!-- Removed play button here -->
             <div class="yt-global-player-title-container">
               <span id="now-playing-title">No song selected</span>
               <div class="yt-global-player-time">
@@ -137,7 +154,6 @@
       </h2>
       <ul class="yt-list" id="mp4-list">
         {% for f in mp4_files %}
-          <!-- Update the MP4 items structure -->
           <li class="yt-list-item" id="mp4-item-{{ loop.index }}">
             <span class="yt-icon">🎬</span>
             <span class="yt-filename">{{ f }}</span>
@@ -160,305 +176,16 @@
         {% endfor %}
       </ul>
     </section>
+
+    <div class="supported-platforms">
+      <p>Supported platforms include: YouTube, SoundCloud, TikTok, Twitter, Instagram, Facebook, Vimeo, Twitch, and <a href="#" title="Click to see all supported sites">hundreds more</a>.</p>
+    </div>
   </main>
 
-  <script>
-    // Global player functionality
-    document.addEventListener("DOMContentLoaded", () => {
-      const playButtons = document.querySelectorAll(".yt-btn-play");
-      const globalPlayer = document.getElementById("global-audio-player");
-      const globalPlayerContainer = document.getElementById("global-player-container");
-      const nowPlayingTitle = document.getElementById("now-playing-title");
-      const currentTimeLabel = document.getElementById("current-time");
-      const durationTimeLabel = document.getElementById("duration-time");
-      const pinPlayerButton = document.getElementById("pin-player-button");
-      let currentlyPlaying = null;
-      
-      // Function to update UI when a song is playing
-      function updatePlayingState(button, isPlaying) {
-        // Update all buttons first (reset them)
-        playButtons.forEach(btn => {
-          btn.textContent = "▶";
-          const listItem = btn.closest('.yt-list-item');
-          if (listItem) listItem.classList.remove('playing');
-        });
-        
-        // Then update the currently playing one if applicable
-        if (button && isPlaying) {
-          button.textContent = "⏸";
-          const listItem = button.closest('.yt-list-item');
-          if (listItem) listItem.classList.add('playing');
-        }
-      }
-      
-      // Format time in MM:SS format
-      function formatTime(seconds) {
-        seconds = Math.floor(seconds);
-        const minutes = Math.floor(seconds / 60);
-        seconds = seconds % 60;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-      }
-      
-      // Update time display
-      function updateTimeDisplay() {
-        if (!globalPlayer.duration) return;
-        
-        currentTimeLabel.textContent = formatTime(globalPlayer.currentTime);
-        durationTimeLabel.textContent = formatTime(globalPlayer.duration);
-      }
-      
-      // Handle player events directly from the audio element
-      globalPlayer.addEventListener('play', () => {
-        updatePlayingState(currentlyPlaying, true);
-      });
-      
-      globalPlayer.addEventListener('pause', () => {
-        updatePlayingState(currentlyPlaying, false);
-      });
-      
-      globalPlayer.addEventListener('ended', () => {
-        updatePlayingState(currentlyPlaying, false);
-      });
-      
-      // Set up play button click handlers
-      playButtons.forEach(button => {
-        button.addEventListener("click", function(event) {
-          event.preventDefault();
-          event.stopPropagation();
-          
-          const audioSrc = this.getAttribute('data-audio-src');
-          const audioTitle = this.getAttribute('data-audio-title');
-          
-          // If this is the current track, just toggle play/pause
-          if (currentlyPlaying === this) {
-            if (globalPlayer.paused) {
-              globalPlayer.play();
-            } else {
-              globalPlayer.pause();
-            }
-            return;
-          }
-          
-          // Otherwise, load and play the new track
-          globalPlayer.src = audioSrc;
-          nowPlayingTitle.textContent = audioTitle;
-          globalPlayerContainer.style.display = 'flex';
-          
-          // Update the currently playing reference
-          currentlyPlaying = this;
-          
-          // Show loading state
-          this.textContent = "⏳";
-          
-          // Try to extract artwork for the player if available
-          const playerArt = document.querySelector('.yt-global-player-art');
-          if (playerArt && audioTitle) {
-            // Generate a color based on the song name
-            const hash = audioTitle.split('').reduce((acc, char) => {
-              return acc + char.charCodeAt(0);
-            }, 0);
-            
-            const hue = hash % 360;
-            playerArt.style.background = `hsl(${hue}, 70%, 50%)`;
-          }
-          
-          // Play and handle states
-          globalPlayer.load();
-          globalPlayer.play().then(() => {
-            updatePlayingState(this, true);
-          }).catch(err => {
-            console.error("Error playing audio:", err);
-            updatePlayingState(this, false);
-            alert("Unable to play audio. This may be due to browser autoplay restrictions or a network issue.");
-          });
-        });
-      });
-      
-      // Update current time and duration display
-      globalPlayer.addEventListener('loadedmetadata', () => {
-        durationTimeLabel.textContent = formatTime(globalPlayer.duration);
-      });
-      
-      globalPlayer.addEventListener('timeupdate', () => {
-        currentTimeLabel.textContent = formatTime(globalPlayer.currentTime);
-      });
-      
-      // Pin player to bottom feature
-      pinPlayerButton.addEventListener('click', () => {
-        const isPinned = globalPlayerContainer.classList.toggle('pinned');
-        pinPlayerButton.textContent = isPinned ? '📍' : '📌';
-        pinPlayerButton.title = isPinned ? 'Unpin player' : 'Pin player to bottom';
-        
-        // Save preference to localStorage
-        localStorage.setItem('player-pinned', isPinned ? 'true' : 'false');
-        
-        // If pinned, ensure player is visible
-        if (isPinned && globalPlayerContainer.style.display === 'none') {
-          globalPlayerContainer.style.display = 'block';
-        }
-      });
-      
-      // Restore pinned state if previously set
-      if (localStorage.getItem('player-pinned') === 'true') {
-        globalPlayerContainer.classList.add('pinned');
-        pinPlayerButton.textContent = '📍';
-        pinPlayerButton.title = 'Unpin player';
-      }
-    });
-    
-    // Delete file function - FIXED SYNTAX ERROR
-    function deleteFile(type, filename, itemId) {
-      if (confirm(`Are you sure you want to delete ${filename}?`)) {
-        fetch(`/delete/${type}/${encodeURIComponent(filename)}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Remove the element from the DOM
-            const element = document.getElementById(itemId);
-            if (element) { // FIXED: proper parenthesis
-              element.style.animation = 'fadeOut 0.3s ease-in-out';
-              setTimeout(() => element.remove(), 300);
-            }
-          } else {
-            alert(`Error deleting file: ${data.error || 'Unknown error'}`);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Failed to delete file. Please try again.');
-        });
-      }
-    }
-    
-    // Add fade out animation for deleted items
-    document.head.insertAdjacentHTML('beforeend', `
-      <style>
-        @keyframes fadeOut {
-          from { opacity: 1; transform: translateY(0); }
-          to { opacity: 0; transform: translateY(-10px); }
-        }
-      </style>
-    `);
-    
-    // Function for download cancellation
-    function cancelDownload(downloadId) {
-      if (confirm("Are you sure you want to cancel this download?")) {
-        fetch(`/cancel/${downloadId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Remove the download from the list
-            const element = document.getElementById(`download-${downloadId}`);
-            if (element) {
-              element.remove();
-            }
-          } else {
-            alert("Failed to cancel download.");
-          }
-        })
-        .catch(error => {
-          console.error("Error cancelling download:", error);
-          alert("Error cancelling download. See console for details.");
-        });
-      }
-    }
-
-    // Theme toggle functionality
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    
-    // Check for saved theme preference or default to system preference
-    function getInitialTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        return savedTheme;
-      }
-      
-      // Check system preference
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return 'dark';
-      }
-      
-      return 'light';
-    }
-    
-    // Apply theme
-    function applyTheme(theme) {
-      body.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-      
-      // Update button appearance
-      const sunIcon = themeToggle.querySelector('.sun-icon');
-      const moonIcon = themeToggle.querySelector('.moon-icon');
-      
-      if (theme === 'dark') {
-        sunIcon.style.display = 'inline';
-        moonIcon.style.display = 'none';
-      } else {
-        sunIcon.style.display = 'none';
-        moonIcon.style.display = 'inline';
-      }
-    }
-    
-    // Initialize theme
-    const initialTheme = getInitialTheme();
-    applyTheme(initialTheme);
-    
-    // Toggle theme on button click
-    themeToggle.addEventListener('click', () => {
-      const currentTheme = body.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      applyTheme(newTheme);
-    });
-    
-    // Listen for system theme changes
-    if (window.matchMedia) {
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        // Only auto-switch if user hasn't manually set a preference
-        if (!localStorage.getItem('theme')) {
-          applyTheme(e.matches ? 'dark' : 'light');
-        }
-      });
-    }
-    
-    // Section collapsing functionality
-    function toggleSection(sectionId) {
-      const section = document.getElementById(sectionId);
-      const sectionHeader = section.previousElementSibling;
-      const isCollapsed = section.classList.toggle('collapsed');
-      
-      // Also add collapsed class to the header for styling
-      sectionHeader.classList.toggle('collapsed');
-      
-      // Store the state in localStorage
-      localStorage.setItem(`${sectionId}-collapsed`, isCollapsed);
-    }
-
-    // Initialize collapsed state from localStorage
-    document.addEventListener('DOMContentLoaded', function() {
-      const sections = ['mp3-list', 'mp4-list'];
-      
-      sections.forEach(sectionId => {
-        const isCollapsed = localStorage.getItem(`${sectionId}-collapsed`) === 'true';
-        if (isCollapsed) {
-          const section = document.getElementById(sectionId);
-          const sectionHeader = section.previousElementSibling;
-          
-          section.classList.add('collapsed');
-          sectionHeader.classList.add('collapsed');
-        }
-      });
-    });
-  </script>
+  <!-- JavaScript files -->
+  <script src="{{ url_for('static', filename='js/player.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
 </body>
 </html>

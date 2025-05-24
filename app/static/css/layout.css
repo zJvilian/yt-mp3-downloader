@@ -1,0 +1,168 @@
+/* Layout and List Styles */
+
+/* Section titles */
+.yt-section-title {
+  font-size: 1.25rem;
+  margin: 2rem 0 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  border-bottom: none;
+  padding-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.yt-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+  margin-left: 8px;
+}
+
+/* Lists */
+.yt-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+  max-height: 1000px;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  padding-top: 12px; /* Add padding at the top of the list */
+}
+
+.yt-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  width: 100%;
+  gap: 8px;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.yt-list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.yt-list-empty {
+  color: var(--text-secondary);
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--surface-color);
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--border-color);
+}
+
+/* Filename text */
+.yt-filename {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-color); 
+  font-weight: 400;
+  padding-right: 16px;
+  max-width: none;
+}
+
+/* Icons & buttons */
+.yt-icon {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Action buttons container */
+.yt-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto; 
+  margin-right: 0;
+  flex-shrink: 0; 
+  flex-basis: auto;
+  white-space: nowrap;
+}
+
+/* Active Downloads Section */
+#active-downloads-section {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Collapsible sections */
+.collapsible {
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsible:hover {
+  opacity: 0.9;
+}
+
+.collapse-indicator {
+  margin-left: 8px;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.collapsed .collapse-indicator {
+  transform: rotate(-90deg);
+}
+
+.yt-list.collapsed {
+  max-height: 0;
+  padding-top: 0;
+  overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .yt-form {
+    flex-direction: column;
+  }
+  
+  .yt-select {
+    width: 100%;
+  }
+  
+  .yt-button {
+    width: 100%;
+  }
+}
+
+/* Responsive adjustments for audio player */
+@media (max-width: 768px) {
+  .yt-list-item {
+    flex-wrap: wrap;
+  }
+  
+  .yt-filename {
+    max-width: 100%;
+    width: 100%;
+    padding-right: 0;
+  }
+  
+  .yt-audio-player {
+    width: 100%;
+    order: 1;
+    margin: 8px 0;
+  }
+  
+  .yt-item-actions {
+    margin-left: auto;
+    margin-right: 0;
+  }
+}
