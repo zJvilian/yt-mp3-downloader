@@ -6,6 +6,7 @@ import ctypes
 import yt_dlp
 import time
 from .config import Config
+from flask import current_app
 
 # Track active yt-dlp instances by download_id
 _active_ydl = {}
@@ -211,6 +212,17 @@ def download_youtube(url: str, to_mp3: bool = True, download_id: str = None):
                     return
                 
                 ydl.download([url])
+                
+                # Notify clients of the new file if in app context
+                try:
+                    from flask import current_app
+                    if current_app:
+                        from .routes import file_changes
+                        file_changes["last_update"] = time.time()
+                        print("Notified clients of new file")
+                except (RuntimeError, ImportError):
+                    # Not in Flask context or routes not available
+                    pass
                     
             except Exception as e:
                 # Check if this was a cancellation

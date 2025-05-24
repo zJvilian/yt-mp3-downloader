@@ -1,14 +1,18 @@
 import os
 import uuid
 import threading
+import time
+import json
 from flask import (
-    current_app, render_template, request, jsonify,
+    current_app, render_template, request, jsonify, Response,
     redirect, url_for, flash, send_from_directory
 )
 from .downloader import download_youtube, cancel_download
 
 # Track active downloads
 active_downloads = {}
+# For tracking file changes and notifying clients
+file_changes = {"last_update": time.time(), "clients": 0}
 
 def register_routes(app):
 
@@ -66,11 +70,70 @@ def register_routes(app):
                               mp4_files=mp4_files,
                               active_downloads=active_downloads)
 
+    @app.route("/events")
+    def events():
+        """Server-sent events endpoint for real-time updates"""
+        def event_stream():
+            # Register this client
+            client_id = uuid.uuid4()
+            file_changes["clients"] += 1
+            
+            try:
+                # Initial data
+                mp3_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP3"]))
+                mp4_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP4"]))
+                
+                data = {
+                    "mp3_files": mp3_files,
+                    "mp4_files": mp4_files,
+                    "active_downloads": {k: v for k, v in active_downloads.items() if v["status"] == "downloading"},
+                    "type": "initial"
+                }
+                
+                yield f"data: {json.dumps(data)}\n\n"
+                
+                # Keep track of last update time for this client
+                last_update = time.time()
+                
+                # Stream updates
+                while True:
+                    # Sleep to prevent high CPU usage - reduced for more frequent checks
+                    time.sleep(0.3)  # Reduced from 1.0 second to 0.3 seconds
+                    
+                    # Check if there are updates
+                    if file_changes["last_update"] > last_update:
+                        mp3_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP3"]))
+                        mp4_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP4"]))
+                        
+                        data = {
+                            "mp3_files": mp3_files,
+                            "mp4_files": mp4_files,
+                            "active_downloads": {k: v for k, v in active_downloads.items() if v["status"] == "downloading"},
+                            "type": "update"
+                        }
+                        
+                        yield f"data: {json.dumps(data)}\n\n"
+                        last_update = time.time()
+                        
+                    # Keep the heartbeat at 15 seconds - this is fine as it's just to keep the connection alive
+                    if time.time() - last_update > 15:
+                        yield f"data: {json.dumps({'type': 'heartbeat'})}\n\n"
+                        last_update = time.time()
+            except Exception as e:
+                print(f"SSE Error: {e}")
+            finally:
+                # Un-register this client
+                file_changes["clients"] -= 1
+        
+        return Response(event_stream(), mimetype="text/event-stream")
+
     @app.route("/cancel/<download_id>", methods=["POST"])
     def cancel_download_route(download_id):
         if download_id in active_downloads:
             cancel_download(download_id)
             active_downloads[download_id]["status"] = "cancelled"
+            # Notify clients of change
+            file_changes["last_update"] = time.time()
             return jsonify({"success": True})
         return jsonify({"success": False, "error": "Download not found"}), 404
         
@@ -106,8 +169,23 @@ def register_routes(app):
         if os.path.exists(filepath):
             try:
                 os.remove(filepath)
+                # Notify clients of change
+                file_changes["last_update"] = time.time()
                 return jsonify({"success": True})
             except OSError as e:
                 return jsonify({"success": False, "error": str(e)}), 500
         else:
             return jsonify({"success": False, "error": "File not found"}), 404
+
+    @app.route("/api/file-list")
+    def file_list():
+        """API endpoint to get file lists for polling"""
+        mp3_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP3"]))
+        mp4_files = sorted(os.listdir(current_app.config["OUTPUT_DIR_MP4"]))
+        
+        return jsonify({
+            "mp3_files": mp3_files,
+            "mp4_files": mp4_files,
+            "active_downloads": {k: v for k, v in active_downloads.items() if v["status"] == "downloading"},
+            "type": "update"
+        })
