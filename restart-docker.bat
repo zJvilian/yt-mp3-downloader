@@ -22,4 +22,4 @@ docker-compose up -d
 
 echo.
 echo ========== Done ==========
-pause
+

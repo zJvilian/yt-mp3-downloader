@@ -48,6 +48,30 @@
       <button class="yt-button">Download</button>
     </form>
 
+    <!-- Global Audio Player (initially hidden) -->
+    <div id="global-player-container" style="display: none">
+      <div class="yt-global-player-inner">
+        <div class="yt-global-player-art">
+          <div class="yt-global-player-icon">🎵</div>
+        </div>
+        <div class="yt-global-player-content">
+          <div class="yt-global-player-info">
+            <!-- Removed play button here -->
+            <div class="yt-global-player-title-container">
+              <span id="now-playing-title">No song selected</span>
+              <div class="yt-global-player-time">
+                <span id="current-time">0:00</span> / <span id="duration-time">0:00</span>
+              </div>
+            </div>
+          </div>
+          <audio id="global-audio-player" class="yt-global-audio-player" controls></audio>
+        </div>
+        <div class="yt-global-player-actions">
+          <button id="pin-player-button" class="yt-btn" title="Pin player to bottom">📌</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Active Downloads -->
     <section id="active-downloads-section" {% if not active_downloads %}style="display: none"{% endif %}>
       <h2 class="yt-section-title">Downloads in Progress</h2>
@@ -80,22 +104,24 @@
           <li class="yt-list-item" id="mp3-item-{{ loop.index }}">
             <button
               class="yt-btn yt-btn-play"
-              data-audio-id="audio-{{ loop.index }}"
+              data-audio-src="{{ url_for('serve_mp3', filename=f) }}"
+              data-audio-title="{{ f }}"
               aria-label="Play/Pause"
             >▶</button>
-            <audio id="audio-{{ loop.index }}" src="{{ url_for('serve_mp3', filename=f) }}"></audio>
             <span class="yt-filename">{{ f }}</span>
-            <a
-              href="{{ url_for('serve_mp3', filename=f) }}"
-              download
-              class="yt-btn yt-btn-download"
-              aria-label="Download"
-            >⬇</a>
-            <button
-              class="yt-btn yt-btn-delete"
-              onclick="deleteFile('mp3', '{{ f }}', 'mp3-item-{{ loop.index }}')"
-              aria-label="Delete"
-            >🗑️</button>
+            <div class="yt-item-actions">
+              <a
+                href="{{ url_for('serve_mp3', filename=f) }}"
+                download
+                class="yt-btn yt-btn-download"
+                aria-label="Download"
+              >⬇</a>
+              <button
+                class="yt-btn yt-btn-delete"
+                onclick="deleteFile('mp3', '{{ f }}', 'mp3-item-{{ loop.index }}')"
+                aria-label="Delete"
+              >🗑️</button>
+            </div>
           </li>
         {% else %}
           <li class="yt-list-empty">No MP3s yet.</li>
@@ -111,20 +137,23 @@
       </h2>
       <ul class="yt-list" id="mp4-list">
         {% for f in mp4_files %}
+          <!-- Update the MP4 items structure -->
           <li class="yt-list-item" id="mp4-item-{{ loop.index }}">
             <span class="yt-icon">🎬</span>
             <span class="yt-filename">{{ f }}</span>
-            <a
-              href="{{ url_for('serve_mp4', filename=f) }}"
-              download
-              class="yt-btn yt-btn-download"
-              aria-label="Download"
-            >⬇</a>
-            <button
-              class="yt-btn yt-btn-delete"
-              onclick="deleteFile('mp4', '{{ f }}', 'mp4-item-{{ loop.index }}')"
-              aria-label="Delete"
-            >🗑️</button>
+            <div class="yt-item-actions">
+              <a
+                href="{{ url_for('serve_mp4', filename=f) }}"
+                download
+                class="yt-btn yt-btn-download"
+                aria-label="Download"
+              >⬇</a>
+              <button
+                class="yt-btn yt-btn-delete"
+                onclick="deleteFile('mp4', '{{ f }}', 'mp4-item-{{ loop.index }}')"
+                aria-label="Delete"
+              >🗑️</button>
+            </div>
           </li>
         {% else %}
           <li class="yt-list-empty">No MP4s yet.</li>
@@ -134,64 +163,147 @@
   </main>
 
   <script>
-    // Toggle play/pause for MP3 buttons
+    // Global player functionality
     document.addEventListener("DOMContentLoaded", () => {
       const playButtons = document.querySelectorAll(".yt-btn-play");
-      console.log(`Found ${playButtons.length} play buttons`);
+      const globalPlayer = document.getElementById("global-audio-player");
+      const globalPlayerContainer = document.getElementById("global-player-container");
+      const nowPlayingTitle = document.getElementById("now-playing-title");
+      const currentTimeLabel = document.getElementById("current-time");
+      const durationTimeLabel = document.getElementById("duration-time");
+      const pinPlayerButton = document.getElementById("pin-player-button");
+      let currentlyPlaying = null;
       
-      playButtons.forEach(btn => {
-        const audioId = btn.getAttribute('data-audio-id');
-        const audio = document.getElementById(audioId);
-        
-        if (!audio) return;
-        
-        // Pre-load the audio
-        audio.load();
-        
-        // Reset state when audio ends
-        audio.addEventListener('ended', () => {
+      // Function to update UI when a song is playing
+      function updatePlayingState(button, isPlaying) {
+        // Update all buttons first (reset them)
+        playButtons.forEach(btn => {
           btn.textContent = "▶";
-          btn.classList.remove('playing');
+          const listItem = btn.closest('.yt-list-item');
+          if (listItem) listItem.classList.remove('playing');
         });
         
-        // Handle play/pause toggle
-        btn.addEventListener("click", function(event) {
+        // Then update the currently playing one if applicable
+        if (button && isPlaying) {
+          button.textContent = "⏸";
+          const listItem = button.closest('.yt-list-item');
+          if (listItem) listItem.classList.add('playing');
+        }
+      }
+      
+      // Format time in MM:SS format
+      function formatTime(seconds) {
+        seconds = Math.floor(seconds);
+        const minutes = Math.floor(seconds / 60);
+        seconds = seconds % 60;
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      }
+      
+      // Update time display
+      function updateTimeDisplay() {
+        if (!globalPlayer.duration) return;
+        
+        currentTimeLabel.textContent = formatTime(globalPlayer.currentTime);
+        durationTimeLabel.textContent = formatTime(globalPlayer.duration);
+      }
+      
+      // Handle player events directly from the audio element
+      globalPlayer.addEventListener('play', () => {
+        updatePlayingState(currentlyPlaying, true);
+      });
+      
+      globalPlayer.addEventListener('pause', () => {
+        updatePlayingState(currentlyPlaying, false);
+      });
+      
+      globalPlayer.addEventListener('ended', () => {
+        updatePlayingState(currentlyPlaying, false);
+      });
+      
+      // Set up play button click handlers
+      playButtons.forEach(button => {
+        button.addEventListener("click", function(event) {
           event.preventDefault();
           event.stopPropagation();
           
-          console.log(`Play button clicked for ${audioId}, Audio paused: ${audio.paused}`);
+          const audioSrc = this.getAttribute('data-audio-src');
+          const audioTitle = this.getAttribute('data-audio-title');
           
-          // Stop all other playing audios first
-          document.querySelectorAll('audio').forEach(a => {
-            if (a.id !== audioId && !a.paused) {
-              a.pause();
-              const otherBtn = document.querySelector(`[data-audio-id="${a.id}"]`);
-              if (otherBtn) {
-                otherBtn.textContent = "▶";
-                otherBtn.classList.remove('playing');
-              }
+          // If this is the current track, just toggle play/pause
+          if (currentlyPlaying === this) {
+            if (globalPlayer.paused) {
+              globalPlayer.play();
+            } else {
+              globalPlayer.pause();
             }
-          });
-          
-          // Toggle current audio
-          if (audio.paused) {
-            btn.textContent = "⏳";
-            
-            audio.play().then(() => {
-              btn.textContent = "⏸";
-              btn.classList.add('playing');
-            }).catch(err => {
-              console.error("Error playing audio:", err);
-              btn.textContent = "▶";
-              alert("Unable to play audio. This may be due to browser autoplay restrictions or a network issue.");
-            });
-          } else {
-            audio.pause();
-            btn.textContent = "▶";
-            btn.classList.remove('playing');
+            return;
           }
+          
+          // Otherwise, load and play the new track
+          globalPlayer.src = audioSrc;
+          nowPlayingTitle.textContent = audioTitle;
+          globalPlayerContainer.style.display = 'flex';
+          
+          // Update the currently playing reference
+          currentlyPlaying = this;
+          
+          // Show loading state
+          this.textContent = "⏳";
+          
+          // Try to extract artwork for the player if available
+          const playerArt = document.querySelector('.yt-global-player-art');
+          if (playerArt && audioTitle) {
+            // Generate a color based on the song name
+            const hash = audioTitle.split('').reduce((acc, char) => {
+              return acc + char.charCodeAt(0);
+            }, 0);
+            
+            const hue = hash % 360;
+            playerArt.style.background = `hsl(${hue}, 70%, 50%)`;
+          }
+          
+          // Play and handle states
+          globalPlayer.load();
+          globalPlayer.play().then(() => {
+            updatePlayingState(this, true);
+          }).catch(err => {
+            console.error("Error playing audio:", err);
+            updatePlayingState(this, false);
+            alert("Unable to play audio. This may be due to browser autoplay restrictions or a network issue.");
+          });
         });
       });
+      
+      // Update current time and duration display
+      globalPlayer.addEventListener('loadedmetadata', () => {
+        durationTimeLabel.textContent = formatTime(globalPlayer.duration);
+      });
+      
+      globalPlayer.addEventListener('timeupdate', () => {
+        currentTimeLabel.textContent = formatTime(globalPlayer.currentTime);
+      });
+      
+      // Pin player to bottom feature
+      pinPlayerButton.addEventListener('click', () => {
+        const isPinned = globalPlayerContainer.classList.toggle('pinned');
+        pinPlayerButton.textContent = isPinned ? '📍' : '📌';
+        pinPlayerButton.title = isPinned ? 'Unpin player' : 'Pin player to bottom';
+        
+        // Save preference to localStorage
+        localStorage.setItem('player-pinned', isPinned ? 'true' : 'false');
+        
+        // If pinned, ensure player is visible
+        if (isPinned && globalPlayerContainer.style.display === 'none') {
+          globalPlayerContainer.style.display = 'block';
+        }
+      });
+      
+      // Restore pinned state if previously set
+      if (localStorage.getItem('player-pinned') === 'true') {
+        globalPlayerContainer.classList.add('pinned');
+        pinPlayerButton.textContent = '📍';
+        pinPlayerButton.title = 'Unpin player';
+      }
     });
     
     // Delete file function - FIXED SYNTAX ERROR
