@@ -1,7 +1,3 @@
-/**
- * Handles audio player functionality
- */
-
 // Initialize player on DOM content loaded
 document.addEventListener("DOMContentLoaded", () => {
   const playButtons = document.querySelectorAll(".yt-btn-play");
@@ -87,7 +83,17 @@ document.addEventListener("DOMContentLoaded", () => {
       currentlyPlaying = this;
       
       // Show loading state
-      this.textContent = "⏳";
+      this.innerHTML = `
+        <div class="loader loader-btn">
+          <div class="loader-square"></div>
+          <div class="loader-square"></div>
+          <div class="loader-square"></div>
+          <div class="loader-square"></div>
+          <div class="loader-square"></div>
+          <div class="loader-square"></div>
+          <div class="loader-square"></div>
+        </div>
+      `;
       
       // Try to extract artwork for the player if available
       const playerArt = document.querySelector('.yt-global-player-art');
@@ -107,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updatePlayingState(this, true);
       }).catch(err => {
         console.error("Error playing audio:", err);
-        updatePlayingState(this, false);
+        this.textContent = "▶"; // Reset to play button if there's an error
         alert("Unable to play audio. This may be due to browser autoplay restrictions or a network issue.");
       });
     });

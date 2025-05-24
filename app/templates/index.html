@@ -96,7 +96,16 @@
         {% for id, download in active_downloads.items() %}
           {% if download.status == "downloading" %}
             <li class="yt-list-item" id="download-{{ id }}">
-              <span class="yt-icon">⏳</span>
+              <!-- Replace hourglass emoji with the square loader -->
+              <div class="loader">
+                <div class="loader-square"></div>
+                <div class="loader-square"></div>
+                <div class="loader-square"></div>
+                <div class="loader-square"></div>
+                <div class="loader-square"></div>
+                <div class="loader-square"></div>
+                <div class="loader-square"></div>
+              </div>
               <span class="yt-filename">{{ download.url }} ({{ download.format }})</span>
               <button 
                 class="yt-btn yt-btn-cancel" 
