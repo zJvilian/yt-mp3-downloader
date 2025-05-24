@@ -70,9 +70,12 @@
     </section>
 
     <!-- Downloaded MP3s -->
-    <section>
-      <h2 class="yt-section-title">Downloaded MP3s</h2>
-      <ul class="yt-list">
+    <section id="mp3-section">
+      <h2 class="yt-section-title collapsible" onclick="toggleSection('mp3-list')">
+        Downloaded MP3s
+        <span class="collapse-indicator">▼</span>
+      </h2>
+      <ul class="yt-list" id="mp3-list">
         {% for f in mp3_files %}
           <li class="yt-list-item" id="mp3-item-{{ loop.index }}">
             <button
@@ -101,9 +104,12 @@
     </section>
 
     <!-- Downloaded MP4s -->
-    <section>
-      <h2 class="yt-section-title">Downloaded MP4s</h2>
-      <ul class="yt-list">
+    <section id="mp4-section">
+      <h2 class="yt-section-title collapsible" onclick="toggleSection('mp4-list')">
+        Downloaded MP4s
+        <span class="collapse-indicator">▼</span>
+      </h2>
+      <ul class="yt-list" id="mp4-list">
         {% for f in mp4_files %}
           <li class="yt-list-item" id="mp4-item-{{ loop.index }}">
             <span class="yt-icon">🎬</span>
@@ -312,6 +318,35 @@
         }
       });
     }
+    
+    // Section collapsing functionality
+    function toggleSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      const sectionHeader = section.previousElementSibling;
+      const isCollapsed = section.classList.toggle('collapsed');
+      
+      // Also add collapsed class to the header for styling
+      sectionHeader.classList.toggle('collapsed');
+      
+      // Store the state in localStorage
+      localStorage.setItem(`${sectionId}-collapsed`, isCollapsed);
+    }
+
+    // Initialize collapsed state from localStorage
+    document.addEventListener('DOMContentLoaded', function() {
+      const sections = ['mp3-list', 'mp4-list'];
+      
+      sections.forEach(sectionId => {
+        const isCollapsed = localStorage.getItem(`${sectionId}-collapsed`) === 'true';
+        if (isCollapsed) {
+          const section = document.getElementById(sectionId);
+          const sectionHeader = section.previousElementSibling;
+          
+          section.classList.add('collapsed');
+          sectionHeader.classList.add('collapsed');
+        }
+      });
+    });
   </script>
 </body>
 </html>
