@@ -217,11 +217,11 @@ def download_youtube(url: str, to_mp3: bool = True, download_id: str = None):
                 try:
                     from flask import current_app
                     if current_app:
-                        from .routes import file_changes
-                        file_changes["last_update"] = time.time()
+                        from .auto_reload import notify_clients
+                        notify_clients()
                         print("Notified clients of new file")
                 except (RuntimeError, ImportError):
-                    # Not in Flask context or routes not available
+                    # Not in Flask context or auto_reload not available
                     pass
                     
             except Exception as e:
