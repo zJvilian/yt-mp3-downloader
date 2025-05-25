@@ -62,6 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (progressBar) {
       progressBar.style.width = `${percent}%`;
     }
+    
+    // Update grabber position
+    const progressGrabber = document.getElementById('audio-progress-grabber');
+    if (progressGrabber) {
+      progressGrabber.style.left = `${percent}%`;
+    }
   }
   
   // Handle progress bar clicks
@@ -98,6 +104,12 @@ document.addEventListener("DOMContentLoaded", () => {
       
       globalPlayer.volume = volumeLevel;
       volumeBar.style.width = `${volumeLevel * 100}%`;
+      
+      // Update volume grabber position
+      const volumeGrabber = document.getElementById('volume-grabber');
+      if (volumeGrabber) {
+        volumeGrabber.style.left = `${volumeLevel * 100}%`;
+      }
       
       // Update mute button state
       if (muteButton) {
@@ -192,4 +204,141 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   });
+  
+  // Fix: Directly initialize the grabbers here (don't use nested DOMContentLoaded)
+  const audioGrabber = document.getElementById('audio-progress-grabber');
+  const volumeGrabber = document.getElementById('volume-grabber');
+  
+  if (audioGrabber) {
+    enableDragging(audioGrabber, 'audio');
+    console.log("Audio grabber initialized");
+  } else {
+    console.warn("Audio grabber element not found");
+  }
+  
+  if (volumeGrabber) {
+    enableDragging(volumeGrabber, 'volume');
+    console.log("Volume grabber initialized");
+  } else {
+    console.warn("Volume grabber element not found");
+  }
+
+  function enableDragging(grabber, type) {
+    let isDragging = false;
+    
+    // Mouse events
+    grabber.addEventListener('mousedown', startDrag);
+    
+    // Touch events for mobile support
+    grabber.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      startDrag({ 
+        clientX: touch.clientX,
+        preventDefault: () => e.preventDefault()
+      });
+    });
+    
+    function startDrag(e) {
+      isDragging = true;
+      
+      // Add event listeners for mouse/touch move and end
+      document.addEventListener('mousemove', handleDrag);
+      document.addEventListener('touchmove', handleTouchDrag, { passive: false });
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('touchend', stopDrag);
+      
+      // Prevent default to avoid text selection
+      e.preventDefault();
+      
+      // Handle the initial drag position
+      if (type === 'audio') {
+        handleAudioDrag(e.clientX);
+      } else if (type === 'volume') {
+        handleVolumeDrag(e.clientX);
+      }
+    }
+    
+    function handleTouchDrag(e) {
+      e.preventDefault(); // Prevent scrolling while dragging
+      if (!isDragging) return;
+      
+      const touch = e.touches[0];
+      if (type === 'audio') {
+        handleAudioDrag(touch.clientX);
+      } else if (type === 'volume') {
+        handleVolumeDrag(touch.clientX);
+      }
+    }
+    
+    function handleDrag(e) {
+      if (!isDragging) return;
+      
+      if (type === 'audio') {
+        handleAudioDrag(e.clientX);
+      } else if (type === 'volume') {
+        handleVolumeDrag(e.clientX);
+      }
+    }
+    
+    function handleAudioDrag(clientX) {
+      const progressContainer = document.querySelector('.yt-progress');
+      const bounds = progressContainer.getBoundingClientRect();
+      const percent = Math.max(0, Math.min(1, (clientX - bounds.left) / bounds.width));
+      
+      // Update time and UI immediately for smooth dragging
+      globalPlayer.currentTime = percent * globalPlayer.duration;
+      
+      // Update the progress bar and grabber positions directly
+      if (progressBar) {
+        progressBar.style.width = `${percent * 100}%`;
+      }
+      
+      grabber.style.left = `${percent * 100}%`;
+      
+      // Update time display
+      if (currentTimeLabel && globalPlayer.currentTime) {
+        currentTimeLabel.textContent = formatTime(globalPlayer.currentTime);
+      }
+    }
+    
+    function handleVolumeDrag(clientX) {
+      const volumeSlider = document.getElementById('volume-slider');
+      const bounds = volumeSlider.getBoundingClientRect();
+      const percent = Math.max(0, Math.min(1, (clientX - bounds.left) / bounds.width));
+      
+      // Update volume and UI
+      globalPlayer.volume = percent;
+      
+      // Update volume bar width
+      const volumeBar = volumeSlider.querySelector('.yt-progress-bar');
+      if (volumeBar) {
+        volumeBar.style.width = `${percent * 100}%`;
+      }
+      
+      // Update grabber position
+      grabber.style.left = `${percent * 100}%`;
+      
+      // Update mute button
+      if (muteButton) {
+        muteButton.textContent = percent < 0.05 ? '🔇' : '🔊';
+      }
+    }
+    
+    function stopDrag() {
+      if (!isDragging) return;
+      
+      isDragging = false;
+      
+      // Remove event listeners
+      document.removeEventListener('mousemove', handleDrag);
+      document.removeEventListener('touchmove', handleTouchDrag);
+      document.removeEventListener('mouseup', stopDrag);
+      document.removeEventListener('touchend', stopDrag);
+      
+      // Final update for both audio and volume
+      if (type === 'audio') {
+        updateTimeDisplay();
+      }
+    }
+  }
 });
