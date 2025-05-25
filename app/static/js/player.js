@@ -341,4 +341,38 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
+  
+  // Previous track button functionality
+  const previousTrackBtn = document.getElementById('previous-track');
+  if (previousTrackBtn) {
+    previousTrackBtn.addEventListener('click', () => {
+      if (!currentlyPlaying) return; // Do nothing if no track is playing
+      
+      const allTracks = Array.from(document.querySelectorAll('.yt-btn-play'));
+      const currentIndex = allTracks.indexOf(currentlyPlaying);
+      
+      if (currentIndex > 0) {
+        // There's a previous track - play it
+        const previousTrack = allTracks[currentIndex - 1];
+        previousTrack.click(); // Trigger the click event on the previous track
+      }
+    });
+  }
+  
+  // Next track button functionality
+  const nextTrackBtn = document.getElementById('next-track');
+  if (nextTrackBtn) {
+    nextTrackBtn.addEventListener('click', () => {
+      if (!currentlyPlaying) return; // Do nothing if no track is playing
+      
+      const allTracks = Array.from(document.querySelectorAll('.yt-btn-play'));
+      const currentIndex = allTracks.indexOf(currentlyPlaying);
+      
+      if (currentIndex < allTracks.length - 1) {
+        // There's a next track - play it
+        const nextTrack = allTracks[currentIndex + 1];
+        nextTrack.click(); // Trigger the click event on the next track
+      }
+    });
+  }
 });

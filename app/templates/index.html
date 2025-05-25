@@ -73,13 +73,9 @@
       <div class="yt-global-player-inner">
         <div class="yt-global-player-art">🎵</div>
         <div class="yt-global-player-info">
-          <!-- Title row without play button -->
           <h3 class="yt-global-player-title" id="now-playing-title">Select a track to play</h3>
           
-          <!-- Centered play button above progress bar -->
-          <div class="yt-player-centered-controls">
-            <button class="yt-player-btn yt-player-btn-play" id="play-pause-global">▶</button>
-          </div>
+          <!-- REMOVE the centered controls from here -->
           
           <div class="yt-global-player-progress">
             <span class="yt-global-player-time" id="current-time">0:00</span>
@@ -90,12 +86,19 @@
             <span class="yt-global-player-time" id="duration">0:00</span>
           </div>
         </div>
+
+        <!-- ADD the controls here alongside volume -->
         <div class="yt-global-player-controls">
+          <div class="yt-player-centered-controls">
+            <button class="yt-player-btn" id="previous-track">⏮</button>
+            <button class="yt-player-btn yt-player-btn-play" id="play-pause-global">▶</button>
+            <button class="yt-player-btn" id="next-track">⏭</button>
+          </div>
           <div class="yt-volume-control">
             <button class="yt-player-btn" id="mute-button">🔊</button>
             <div class="yt-progress" id="volume-slider">
               <div class="yt-progress-bar" style="width: 100%"></div>
-              <div class="yt-progress-grabber" id="volume-grabber" style="right: 0;"></div>
+              <div class="yt-progress-grabber" id="volume-grabber"></div>
             </div>
           </div>
         </div>
