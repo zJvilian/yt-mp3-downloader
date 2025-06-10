@@ -1,6 +1,9 @@
 // Initialize player on DOM content loaded
 document.addEventListener("DOMContentLoaded", () => {
-  const playButtons = document.querySelectorAll(".yt-btn-play");
+  // Only attach to audio play buttons (exclude video play buttons)
+  const playButtons = document.querySelectorAll(
+    ".yt-btn-play:not(.yt-btn-video-play)"
+  );
   const globalPlayer = document.getElementById("global-audio-player");
   const globalPlayerContainer = document.getElementById("global-player-container");
   const nowPlayingTitle = document.getElementById("now-playing-title");
@@ -16,12 +19,14 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Function to update UI when a song is playing
   function updatePlayingState(button, isPlaying) {
-    // Update all buttons first (reset them)
-    playButtons.forEach(btn => {
-      btn.textContent = "▶";
-      const listItem = btn.closest('.yt-list-item');
-      if (listItem) listItem.classList.remove('playing');
-    });
+    // Reset all audio play buttons
+    document
+      .querySelectorAll('.yt-btn-play:not(.yt-btn-video-play)')
+      .forEach(btn => {
+        btn.textContent = '▶';
+        const listItem = btn.closest('.yt-list-item');
+        if (listItem) listItem.classList.remove('playing');
+      });
     
     // Then update the currently playing one if applicable
     if (button && isPlaying) {
@@ -150,6 +155,11 @@ document.addEventListener("DOMContentLoaded", () => {
       
       const audioSrc = this.getAttribute('data-audio-src');
       const audioTitle = this.getAttribute('data-audio-title');
+
+      // Ignore clicks on elements without an audio source
+      if (!audioSrc) {
+        return;
+      }
       
       // If this is the current track, just toggle play/pause
       if (currentlyPlaying === this) {
@@ -348,7 +358,9 @@ document.addEventListener("DOMContentLoaded", () => {
     previousTrackBtn.addEventListener('click', () => {
       if (!currentlyPlaying) return; // Do nothing if no track is playing
       
-      const allTracks = Array.from(document.querySelectorAll('.yt-btn-play'));
+      const allTracks = Array.from(
+        document.querySelectorAll('.yt-btn-play:not(.yt-btn-video-play)')
+      );
       const currentIndex = allTracks.indexOf(currentlyPlaying);
       
       if (currentIndex > 0) {
@@ -365,7 +377,9 @@ document.addEventListener("DOMContentLoaded", () => {
     nextTrackBtn.addEventListener('click', () => {
       if (!currentlyPlaying) return; // Do nothing if no track is playing
       
-      const allTracks = Array.from(document.querySelectorAll('.yt-btn-play'));
+      const allTracks = Array.from(
+        document.querySelectorAll('.yt-btn-play:not(.yt-btn-video-play)')
+      );
       const currentIndex = allTracks.indexOf(currentlyPlaying);
       
       if (currentIndex < allTracks.length - 1) {
