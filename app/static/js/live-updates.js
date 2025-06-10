@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data-audio-src="/mp3s/${encodeURIComponent(filename)}"
         data-audio-title="${filename}"
         aria-label="Play/Pause"
-      >▶</button>
+      ><img src="/static/img/play.svg" alt="Play"></button>
       <span class="yt-filename">${filename}</span>
       <div class="yt-item-actions">
         <a
@@ -138,12 +138,12 @@ document.addEventListener("DOMContentLoaded", () => {
           download
           class="yt-btn yt-btn-download"
           aria-label="Download"
-        >⬇</a>
+        ><img src="/static/img/download.svg" alt="Download"></a>
         <button
           class="yt-btn yt-btn-delete"
           onclick="deleteFile('mp3', '${filename}', 'mp3-item-${index + 1}')"
           aria-label="Delete"
-        >🗑️</button>
+        ><img src="/static/img/trash.svg" alt="Delete"></button>
       </div>
     `;
     // Animation for new items
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
         class="yt-btn yt-btn-play yt-btn-video-play"
         data-video-src="/mp4s/${encodeURIComponent(filename)}"
         aria-label="Play Video"
-      >▶</button>
+      ><img src="/static/img/play.svg" alt="Play"></button>
       <span class="yt-filename">${filename}</span>
       <div class="yt-item-actions">
         <a
@@ -173,12 +173,12 @@ document.addEventListener("DOMContentLoaded", () => {
           download
           class="yt-btn yt-btn-download"
           aria-label="Download"
-        >⬇</a>
+        ><img src="/static/img/download.svg" alt="Download"></a>
         <button
           class="yt-btn yt-btn-delete"
           onclick="deleteFile('mp4', '${filename}', 'mp4-item-${index + 1}')"
           aria-label="Delete"
-        >🗑️</button>
+        ><img src="/static/img/trash.svg" alt="Delete"></button>
       </div>
     `;
     // Animation for new items
@@ -313,7 +313,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Try to play
       globalPlayer.load();
       globalPlayer.play().then(() => {
-        this.textContent = "⏸";
+        const img = this.querySelector('img');
+        if (img) img.src = '/static/img/pause.svg';
         
         // Mark this item as playing
         const listItem = this.closest('.yt-list-item');
@@ -328,7 +329,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }).catch(err => {
         console.error("Error playing audio:", err);
-        this.textContent = "▶"; // Reset to play button if there's an error
+        const img = this.querySelector('img');
+        if (img) img.src = '/static/img/play.svg'; // Reset to play button if there's an error
         alert("Unable to play audio. This may be due to browser autoplay restrictions or a network issue.");
       });
     });
