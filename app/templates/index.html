@@ -30,7 +30,10 @@
   <!-- Top bar -->
   <header class="yt-header">
     <div class="yt-container">
-      <a href="/" class="yt-logo">Universal Media Downloader</a>
+      <a href="/" class="yt-logo">
+        <img src="{{ url_for('static', filename='img/download.svg') }}" alt="Logo" class="yt-logo-icon">
+        Universal Media Downloader
+      </a>
       <!-- Replace the existing theme toggle button with this new switch -->
       <label class="switch" title="Toggle dark/light mode">
         <input id="theme-checkbox" type="checkbox" />
@@ -95,12 +98,20 @@
         <!-- ADD the controls here alongside volume -->
         <div class="yt-global-player-controls">
           <div class="yt-player-centered-controls">
-            <button class="yt-player-btn" id="previous-track">⏮</button>
-            <button class="yt-player-btn yt-player-btn-play" id="play-pause-global">▶</button>
-            <button class="yt-player-btn" id="next-track">⏭</button>
+            <button class="yt-player-btn" id="previous-track">
+              <img src="{{ url_for('static', filename='img/rewind.svg') }}" alt="Previous">
+            </button>
+            <button class="yt-player-btn yt-player-btn-play" id="play-pause-global">
+              <img src="{{ url_for('static', filename='img/play.svg') }}" alt="Play">
+            </button>
+            <button class="yt-player-btn" id="next-track">
+              <img src="{{ url_for('static', filename='img/forward.svg') }}" alt="Next">
+            </button>
           </div>
           <div class="yt-volume-control">
-            <button class="yt-player-btn" id="mute-button">🔊</button>
+            <button class="yt-player-btn" id="mute-button">
+              <img src="{{ url_for('static', filename='img/volume.svg') }}" alt="Volume">
+            </button>
             <div class="yt-progress" id="volume-slider">
               <div class="yt-progress-bar" style="width: 100%"></div>
               <div class="yt-progress-grabber" id="volume-grabber"></div>
@@ -156,7 +167,9 @@
               data-audio-src="{{ url_for('serve_mp3', filename=f) }}"
               data-audio-title="{{ f }}"
               aria-label="Play/Pause"
-            >▶</button>
+            >
+              <img src="{{ url_for('static', filename='img/play.svg') }}" alt="Play">
+            </button>
             <span class="yt-filename">{{ f }}</span>
             <div class="yt-item-actions">
               <a
@@ -164,12 +177,12 @@
                 download
                 class="yt-btn yt-btn-download"
                 aria-label="Download"
-              >⬇</a>
+              ><img src="{{ url_for('static', filename='img/download.svg') }}" alt="Download"></a>
               <button
                 class="yt-btn yt-btn-delete"
                 onclick="deleteFile('mp3', '{{ f }}', 'mp3-item-{{ loop.index }}')"
                 aria-label="Delete"
-              >🗑️</button>
+              ><img src="{{ url_for('static', filename='img/trash.svg') }}" alt="Delete"></button>
             </div>
           </li>
         {% else %}
@@ -192,7 +205,9 @@
               data-video-src="{{ url_for('serve_mp4', filename=f) }}"
               data-video-title="{{ f }}"
               aria-label="Play Video"
-            >▶</button>
+            >
+              <img src="{{ url_for('static', filename='img/play.svg') }}" alt="Play">
+            </button>
             <span class="yt-filename">{{ f }}</span>
             <div class="yt-item-actions">
               <a
@@ -200,12 +215,12 @@
                 download
                 class="yt-btn yt-btn-download"
                 aria-label="Download"
-              >⬇</a>
+              ><img src="{{ url_for('static', filename='img/download.svg') }}" alt="Download"></a>
               <button
                 class="yt-btn yt-btn-delete"
                 onclick="deleteFile('mp4', '{{ f }}', 'mp4-item-{{ loop.index }}')"
                 aria-label="Delete"
-              >🗑️</button>
+              ><img src="{{ url_for('static', filename='img/trash.svg') }}" alt="Delete"></button>
             </div>
           </li>
         {% else %}

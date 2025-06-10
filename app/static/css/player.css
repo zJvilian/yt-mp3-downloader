@@ -276,7 +276,7 @@
 }
 
 .yt-list-item.playing::before {
-  content: "▶️ PLAYING";
+  content: "PLAYING";
   position: absolute;
   top: -12px; /* Move it slightly higher */
   right: 10px;

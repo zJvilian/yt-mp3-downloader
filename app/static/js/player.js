@@ -16,6 +16,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const playPauseGlobal = document.getElementById("play-pause-global");
   
   let currentlyPlaying = null;
+
+  const ICONS = {
+    play: "/static/img/play.svg",
+    pause: "/static/img/pause.svg",
+    volume: "/static/img/volume.svg",
+    mute: "/static/img/volume-mute.svg",
+  };
+
+  function setIcon(button, icon) {
+    const img = button.querySelector("img");
+    if (img) {
+      img.src = ICONS[icon];
+    } else {
+      button.innerHTML = `<img src="${ICONS[icon]}" alt="">`;
+    }
+  }
   
   // Function to update UI when a song is playing
   function updatePlayingState(button, isPlaying) {
@@ -23,21 +39,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document
       .querySelectorAll('.yt-btn-play:not(.yt-btn-video-play)')
       .forEach(btn => {
-        btn.textContent = '▶';
+        setIcon(btn, 'play');
         const listItem = btn.closest('.yt-list-item');
         if (listItem) listItem.classList.remove('playing');
       });
     
     // Then update the currently playing one if applicable
     if (button && isPlaying) {
-      button.textContent = "⏸";
+      setIcon(button, 'pause');
       const listItem = button.closest('.yt-list-item');
       if (listItem) listItem.classList.add('playing');
     }
     
     // Also update the global play/pause button
     if (playPauseGlobal) {
-      playPauseGlobal.textContent = isPlaying ? "⏸" : "▶";
+      setIcon(playPauseGlobal, isPlaying ? 'pause' : 'play');
     }
   }
   
@@ -118,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Update mute button state
       if (muteButton) {
-        muteButton.textContent = volumeLevel === 0 ? '🔇' : '🔊';
+        setIcon(muteButton, volumeLevel === 0 ? 'mute' : 'volume');
       }
     });
   }
@@ -127,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (muteButton) {
     muteButton.addEventListener('click', () => {
       globalPlayer.muted = !globalPlayer.muted;
-      muteButton.textContent = globalPlayer.muted ? '🔇' : '🔊';
+      setIcon(muteButton, globalPlayer.muted ? 'mute' : 'volume');
     });
   }
   
@@ -209,7 +225,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updatePlayingState(this, true);
       }).catch(err => {
         console.error("Error playing audio:", err);
-        this.textContent = "▶"; // Reset to play button if there's an error
+        setIcon(this, 'play'); // Reset to play button if there's an error
         alert("Unable to play audio. This may be due to browser autoplay restrictions or a network issue.");
       });
     });
@@ -330,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       // Update mute button
       if (muteButton) {
-        muteButton.textContent = percent < 0.05 ? '🔇' : '🔊';
+        setIcon(muteButton, percent < 0.05 ? 'mute' : 'volume');
       }
     }
     

@@ -87,6 +87,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+.yt-btn img {
+  width: 20px;
+  height: 20px;
+}
+
 .yt-btn:hover {
   transform: scale(1.05);
   box-shadow: var(--shadow-md);

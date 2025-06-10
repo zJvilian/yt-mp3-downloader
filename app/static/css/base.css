@@ -47,9 +47,10 @@ body.yt-body {
   gap: 8px;
 }
 
-.yt-logo::before {
-  content: "⬇"; /* Changed from "▶" to a download icon */
-  display: inline-block;
+
+.yt-logo-icon {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 /* Alerts */
