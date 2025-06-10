@@ -29,6 +29,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Close the modal when clicking outside the video container
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      modal.classList.remove('active');
+      if (player.pause) player.pause();
+    }
+  });
+
+  // Allow closing with the Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+      if (player.pause) player.pause();
+    }
+  });
+
   window.initVideoButton = function(button) {
     if (!button) return;
     button.addEventListener('click', function(e) {
