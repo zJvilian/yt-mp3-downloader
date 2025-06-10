@@ -19,6 +19,9 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-switch.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
+  <!-- Video.js and modal styles -->
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/video.css') }}">
 </head>
 <body class="yt-body">
 
@@ -181,7 +184,12 @@
       <ul class="yt-list" id="mp4-list">
         {% for f in mp4_files %}
           <li class="yt-list-item" id="mp4-item-{{ loop.index }}">
-            <span class="yt-icon">🎬</span>
+            <button
+              class="yt-btn yt-btn-play yt-btn-video-play"
+              data-video-src="{{ url_for('serve_mp4', filename=f) }}"
+              data-video-title="{{ f }}"
+              aria-label="Play Video"
+            >▶</button>
             <span class="yt-filename">{{ f }}</span>
             <div class="yt-item-actions">
               <a
@@ -208,11 +216,21 @@
     </div>
   </main>
 
+  <!-- Video player modal -->
+  <div id="video-modal" class="video-modal">
+    <div class="video-container">
+      <button id="video-modal-close" class="video-modal-close">&times;</button>
+      <video id="video-player" class="video-js vjs-default-skin" controls preload="auto"></video>
+    </div>
+  </div>
+
   <!-- JavaScript files -->
   <script src="{{ url_for('static', filename='js/player.js') }}"></script>
   <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
   <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
   <script src="{{ url_for('static', filename='js/api.js') }}"></script>
   <script src="{{ url_for('static', filename='js/live-updates.js') }}"></script>
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+  <script src="{{ url_for('static', filename='js/video-player.js') }}"></script>
 </body>
 </html>
