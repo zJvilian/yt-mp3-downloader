@@ -1,0 +1,23 @@
+/* Mobile-specific overrides */
+@media (max-width: 640px) {
+  .yt-container {
+    width: 95%;
+  }
+  .yt-header .yt-container {
+    padding: 0 0.5rem;
+  }
+  .yt-logo {
+    font-size: 1.25rem;
+  }
+  .yt-form {
+    padding: 1rem;
+    flex-direction: column;
+  }
+  .yt-select,
+  .yt-button {
+    width: 100%;
+  }
+  .yt-section-title {
+    font-size: 1.1rem;
+  }
+}
