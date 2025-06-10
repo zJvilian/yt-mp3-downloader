@@ -161,7 +161,11 @@ document.addEventListener("DOMContentLoaded", () => {
     li.className = 'yt-list-item';
     li.id = `mp4-item-${index + 1}`;
     li.innerHTML = `
-      <span class="yt-icon">🎬</span>
+      <button
+        class="yt-btn yt-btn-play yt-btn-video-play"
+        data-video-src="/mp4s/${encodeURIComponent(filename)}"
+        aria-label="Play Video"
+      >▶</button>
       <span class="yt-filename">${filename}</span>
       <div class="yt-item-actions">
         <a
@@ -179,6 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     // Animation for new items
     li.style.animation = 'fadeIn 0.3s ease-in-out';
+    const playBtn = li.querySelector('.yt-btn-video-play');
+    if (window.initVideoButton) window.initVideoButton(playBtn);
     return li;
   }
   
