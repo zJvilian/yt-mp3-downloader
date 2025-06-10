@@ -215,7 +215,8 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const [id, download] of Object.entries(activeDownloads)) {
       if (download.status === 'downloading') {
         const existing = currentDownloads.find(item => item.id === id);
-        
+        const progressText = `${download.current}/${download.total}`;
+
         if (!existing) {
           const newItem = document.createElement('li');
           newItem.className = 'yt-list-item';
@@ -231,14 +232,20 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="loader-square"></div>
             </div>
             <span class="yt-filename">${download.url} (${download.format})</span>
-            <button 
-              class="yt-btn yt-btn-cancel" 
+            <span class="download-progress" id="progress-${id}">${progressText}</span>
+            <button
+              class="yt-btn yt-btn-cancel"
               data-download-id="${id}"
               aria-label="Cancel"
               onclick="cancelDownload('${id}')"
             >✖</button>
           `;
           list.appendChild(newItem);
+        } else {
+          const progressEl = existing.element.querySelector('.download-progress');
+          if (progressEl) {
+            progressEl.textContent = progressText;
+          }
         }
       }
     }

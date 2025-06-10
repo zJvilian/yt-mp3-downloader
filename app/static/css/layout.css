@@ -71,10 +71,19 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-color); 
+  color: var(--text-color);
   font-weight: 400;
   padding-right: 16px;
   max-width: none;
+}
+
+/* Playlist progress indicator */
+.download-progress {
+  margin-left: auto;
+  margin-right: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 /* Icons & buttons */
