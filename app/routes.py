@@ -113,8 +113,13 @@ def register_routes(app):
         # Get the directory based on file type
         directory = current_app.config["OUTPUT_DIR_MP3"] if filetype == "mp3" else current_app.config["OUTPUT_DIR_MP4"]
         
-        # Build the full path
-        filepath = os.path.join(directory, filename)
+        # Build the full path and ensure it's within the expected directory
+        filepath = os.path.abspath(os.path.join(directory, filename))
+        directory_abs = os.path.abspath(directory)
+
+        # Prevent path traversal attacks
+        if os.path.commonpath([filepath, directory_abs]) != directory_abs:
+            return jsonify({"success": False, "error": "Invalid file path"}), 400
         
         # Check if file exists and delete it
         if os.path.exists(filepath):
