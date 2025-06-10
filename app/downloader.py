@@ -97,15 +97,16 @@ def cleanup_partial_files(download_id):
         # Clear the file list
         _download_files[download_id] = []
 
-def progress_hook(d):
+def progress_hook(d, download_id=None, progress_cb=None):
     """Track file paths during download and report playlist progress"""
-    # Extract download_id and callback from the external context
-    if not d.get('download_id') and 'ctx' in d and 'download_id' in d['ctx']:
-        download_id = d['ctx']['download_id']
-        progress_cb = d['ctx'].get('progress_callback')
-    else:
-        download_id = d.get('download_id')
-        progress_cb = d.get('progress_callback')
+    # Allow passing download_id/progress_cb via wrapper for convenience
+    if download_id is None:
+        if not d.get('download_id') and 'ctx' in d and 'download_id' in d['ctx']:
+            download_id = d['ctx']['download_id']
+            progress_cb = progress_cb or d['ctx'].get('progress_callback')
+        else:
+            download_id = d.get('download_id')
+            progress_cb = progress_cb or d.get('progress_callback')
         
     if not download_id:
         return
@@ -177,10 +178,9 @@ def download_youtube(url: str, to_mp3: bool = True, download_id: str = None, pro
             "prefer_ffmpeg": True,
             
             # progress hook to track files
-            "progress_hooks": [progress_hook],
-
-            # Add context for hooks to access download_id and callback
-            "ctx": {"download_id": download_id, "progress_callback": progress_callback},
+            "progress_hooks": [
+                lambda d, dl_id=download_id, cb=progress_callback: progress_hook(d, dl_id, cb)
+            ],
             
             # Make sure we can interrupt
             "noprogress": False,
