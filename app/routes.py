@@ -6,6 +6,7 @@ from flask import (
     redirect, url_for, flash, send_from_directory
 )
 from .downloader import download_youtube, cancel_download
+import yt_dlp
 from .auto_reload import (
     get_filtered_files, notify_clients, handle_event_stream, get_files_response
 )
@@ -35,18 +36,40 @@ def register_routes(app):
 
             # Generate a unique ID for this download
             download_id = str(uuid.uuid4())
+            # Determine total items in the playlist (or single video)
+            total = 1
+            try:
+                with yt_dlp.YoutubeDL({"quiet": True, "skip_download": True, "extract_flat": "in_playlist"}) as ydl:
+                    info = ydl.extract_info(url, download=False)
+                    if isinstance(info, dict) and "entries" in info:
+                        total = len(info["entries"])
+            except Exception:
+                pass
+
             active_downloads[download_id] = {
                 "url": url,
                 "format": fmt,
-                "status": "downloading"
+                "status": "downloading",
+                "current": 0,
+                "total": total,
             }
             
             # Run download in background thread
             def download_task():
+                def progress_cb(d_id, _info):
+                    if d_id in active_downloads:
+                        active_downloads[d_id]["current"] += 1
+                        notify_clients()
+
                 try:
                     cwd = os.getcwd()
                     os.chdir(output_dir)
-                    download_youtube(url, to_mp3=to_mp3, download_id=download_id)
+                    download_youtube(
+                        url,
+                        to_mp3=to_mp3,
+                        download_id=download_id,
+                        progress_callback=progress_cb,
+                    )
                     flash(f"✅ {fmt.upper()} download complete!")
                 except Exception as e:
                     flash(f"⚠️ Download failed: {e}")
@@ -54,7 +77,6 @@ def register_routes(app):
                     os.chdir(cwd)
                     if download_id in active_downloads:
                         active_downloads[download_id]["status"] = "completed"
-                    # Notify clients of the change
                     notify_clients()
             
             thread = threading.Thread(target=download_task)

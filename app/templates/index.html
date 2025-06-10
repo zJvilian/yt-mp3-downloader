@@ -129,8 +129,9 @@
                 <div class="loader-square"></div>
               </div>
               <span class="yt-filename">{{ download.url }} ({{ download.format }})</span>
-              <button 
-                class="yt-btn yt-btn-cancel" 
+              <span class="download-progress" id="progress-{{ id }}">{{ download.current }}/{{ download.total }}</span>
+              <button
+                class="yt-btn yt-btn-cancel"
                 data-download-id="{{ id }}"
                 aria-label="Cancel"
                 onclick="cancelDownload('{{ id }}')"

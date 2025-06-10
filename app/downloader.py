@@ -98,12 +98,14 @@ def cleanup_partial_files(download_id):
         _download_files[download_id] = []
 
 def progress_hook(d):
-    """Track file paths during download"""
-    # Extract download_id from the external context
+    """Track file paths during download and report playlist progress"""
+    # Extract download_id and callback from the external context
     if not d.get('download_id') and 'ctx' in d and 'download_id' in d['ctx']:
         download_id = d['ctx']['download_id']
+        progress_cb = d['ctx'].get('progress_callback')
     else:
         download_id = d.get('download_id')
+        progress_cb = d.get('progress_callback')
         
     if not download_id:
         return
@@ -129,7 +131,14 @@ def progress_hook(d):
                 print(f"Tracking postprocess file for {download_id}: {filepath}")
                 _download_files[download_id].append(filepath)
 
-def download_youtube(url: str, to_mp3: bool = True, download_id: str = None):
+    # When a video/entry is finished, trigger progress callback
+    if d.get('status') == 'finished' and progress_cb:
+        try:
+            progress_cb(download_id, d)
+        except Exception as e:
+            print(f"Progress callback error: {e}")
+
+def download_youtube(url: str, to_mp3: bool = True, download_id: str = None, progress_callback=None):
     """
     Download a YouTube URL as MP3 (with embedded cover & metadata)
     or MP4 (video). Filenames use only the title + ext, no IDs or literals.
@@ -138,6 +147,8 @@ def download_youtube(url: str, to_mp3: bool = True, download_id: str = None):
         url: YouTube URL to download
         to_mp3: Whether to convert to MP3 (True) or keep as MP4 (False)
         download_id: Optional ID to track this download for cancellation
+        progress_callback: Optional callback invoked when each playlist entry is
+            finished. It receives ``(download_id, info_dict)``.
     """
     # Track this download thread if an ID was provided
     if download_id:
@@ -167,9 +178,9 @@ def download_youtube(url: str, to_mp3: bool = True, download_id: str = None):
             
             # progress hook to track files
             "progress_hooks": [progress_hook],
-            
-            # Add context for hooks to access download_id
-            "ctx": {"download_id": download_id},
+
+            # Add context for hooks to access download_id and callback
+            "ctx": {"download_id": download_id, "progress_callback": progress_callback},
             
             # Make sure we can interrupt
             "noprogress": False,
