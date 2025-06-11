@@ -17,6 +17,7 @@
   --border-color: #cccccc;
   --accent-color: #ff0000;
   --hover-bg: #f0f0f0;
+  --icon-filter: none; /* Default - no filter for light mode */
 }
 
 /* Dark theme styles */
@@ -28,4 +29,5 @@
   --border-color: #333333;
   --accent-color: #ff0000;
   --hover-bg: #333333;
+  --icon-filter: brightness(0) invert(1); /* Make icons white in dark mode */
 }
