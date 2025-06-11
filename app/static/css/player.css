@@ -267,28 +267,47 @@
   background-color: var(--primary-hover);
 }
 
-/* Highlight the currently playing item more distinctly */
-.yt-list-item.playing {
-  background-color: var(--hover-bg);
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary);
-  position: relative;
+/* Add this to control the size of SVGs in the player buttons */
+.yt-player-btn img {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
-.yt-list-item.playing::before {
-  content: "PLAYING";
-  position: absolute;
-  top: -12px; /* Move it slightly higher */
-  right: 10px;
-  font-size: 10px;
-  background: var(--primary);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: bold;
+/* For the play/pause button, which might need slightly different sizing */
+.yt-player-btn-play img {
+  width: 16px;
+  height: 16px;
 }
 
-/* Media queries for responsiveness */
+/* For the volume control button */
+#mute-button img {
+  width: 18px;
+  height: 18px;
+}
+
+/* Make sure SVGs in the global player don't inherit styles from other buttons */
+.yt-global-player-controls img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Apply icon filter based on theme */
+.yt-player-btn img,
+.yt-global-player-controls img,
+.yt-btn-download img,
+.yt-btn-delete img,
+#video-modal-close img {
+  filter: var(--icon-filter);
+}
+
+/* Exception for colorful icons that should maintain their colors */
+.yt-btn-play img,
+.yt-player-btn-play img {
+  filter: none; /* Keep original colors for play buttons */
+}
+
+/* For smaller screens, make icons even smaller */
 @media (max-width: 640px) {
   .yt-global-player-inner {
     padding: 8px;
@@ -301,6 +320,11 @@
   
   .yt-volume-control {
     display: none; /* Hide volume on mobile */
+  }
+  
+  .yt-player-btn img {
+    width: 16px;
+    height: 16px;
   }
 }
 
