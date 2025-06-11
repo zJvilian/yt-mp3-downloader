@@ -3,6 +3,8 @@
 A modern web interface for downloading YouTube videos as MP3 (audio) or MP4 (video) with built-in media players.  
 Built with Flask and yt-dlp, featuring a responsive design and packaged with Docker for easy deployment.
 
+![Universal Media Downloader](app/static/img/main-logo.png)
+
 ---
 
 ## Features

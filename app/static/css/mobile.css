@@ -8,6 +8,11 @@
   }
   .yt-logo {
     font-size: 1.25rem;
+    gap: 8px; /* Reduced gap for mobile */
+  }
+  .yt-logo-icon {
+    width: 1.8rem; /* Slightly smaller on mobile */
+    height: 1.8rem;
   }
   .yt-form {
     padding: 1rem;

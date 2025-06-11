@@ -44,13 +44,15 @@ body.yt-body {
   margin-left: 1rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px; /* Increased from 8px for better spacing with larger logo */
 }
 
 
 .yt-logo-icon {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 2.2rem;  /* Increased from 1.2rem to better display the logo */
+  height: 2.2rem; /* Increased from 1.2rem to maintain aspect ratio */
+  object-fit: contain; /* Ensures logo maintains its aspect ratio */
+  filter: var(--icon-filter); /* For dark mode compatibility */
 }
 
 /* Alerts */
