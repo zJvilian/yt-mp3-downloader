@@ -19,6 +19,7 @@ Built with Flask and yt-dlp, featuring a responsive design and packaged with Doc
 - **Responsive design**: Mobile-friendly interface that works on all devices
 - **Progress tracking**: Real-time download progress updates
 - **Error handling**: User-friendly error messages and validation
+- **Auto-updating backend**: Ensures the latest `yt-dlp` is used for reliable downloads
 - **Docker ready**: One-command deployment with Docker
 
 ---
@@ -113,7 +114,7 @@ For downloading age-restricted or premium content, add your YouTube cookies to `
 ## Technical Details
 
 - **Backend**: Flask (Python web framework)
-- **Downloader**: yt-dlp (YouTube download library)
+- **Downloader**: yt-dlp (auto-updated YouTube download library)
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
 - **Media Players**: HTML5 audio/video with custom controls
 - **Styling**: Responsive CSS with modal overlays
