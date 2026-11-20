@@ -1,12 +1,13 @@
 import os
 import uuid
 import threading
+from urllib.parse import urlsplit
+from werkzeug.utils import safe_join
 from flask import (
     current_app, render_template, request, jsonify, Response,
-    redirect, url_for, flash, send_from_directory
+    redirect, url_for, flash, send_from_directory, stream_with_context
 )
 from .downloader import download_youtube, cancel_download
-import yt_dlp
 from .auto_reload import (
     get_filtered_files, notify_clients, handle_event_stream, get_files_response
 )
@@ -22,7 +23,11 @@ def register_routes(app):
             url    = request.form.get("url", "").strip()
             fmt    = request.form.get("format", "mp3")
 
-            if not url:
+            quality = request.form.get("quality", "192")
+            height = request.form.get("height", "1080")
+            playlist = request.form.get("playlist") == "on"
+            parsed = urlsplit(url)
+            if parsed.scheme not in {"http", "https"} or not parsed.hostname or fmt not in {"mp3", "mp4"} or quality not in {"128", "192", "320"} or height not in {"720", "1080", "2160"}:
                 flash("⚠️ Please enter a valid YouTube URL")
                 return redirect(url_for("index"))
 
@@ -36,16 +41,7 @@ def register_routes(app):
 
             # Generate a unique ID for this download
             download_id = str(uuid.uuid4())
-            # Determine total items in the playlist (or single video)
-            total = 1
-            try:
-                with yt_dlp.YoutubeDL({"quiet": True, "skip_download": True, "extract_flat": "in_playlist"}) as ydl:
-                    info = ydl.extract_info(url, download=False)
-                    if isinstance(info, dict) and "entries" in info:
-                        total = len(info["entries"])
-            except Exception:
-                pass
-
+            total = "?" if playlist else 1
             active_downloads[download_id] = {
                 "url": url,
                 "format": fmt,
@@ -62,21 +58,19 @@ def register_routes(app):
                         notify_clients()
 
                 try:
-                    cwd = os.getcwd()
-                    os.chdir(output_dir)
                     download_youtube(
                         url,
                         to_mp3=to_mp3,
                         download_id=download_id,
                         progress_callback=progress_cb,
+                        output_dir=output_dir, quality=quality, height=height, playlist=playlist,
                     )
-                    flash(f"✅ {fmt.upper()} download complete!")
-                except Exception as e:
-                    flash(f"⚠️ Download failed: {e}")
-                finally:
-                    os.chdir(cwd)
-                    if download_id in active_downloads:
+                    if active_downloads[download_id]["status"] != "cancelled":
                         active_downloads[download_id]["status"] = "completed"
+                except Exception as e:
+                    if active_downloads[download_id]["status"] != "cancelled":
+                        active_downloads[download_id].update(status="failed", error=str(e))
+                finally:
                     notify_clients()
             
             thread = threading.Thread(target=download_task)
@@ -96,7 +90,7 @@ def register_routes(app):
     def events():
         """Server-sent events endpoint for real-time updates"""
         return Response(
-            handle_event_stream(active_downloads), 
+            stream_with_context(handle_event_stream(active_downloads)), 
             mimetype="text/event-stream"
         )
 
@@ -136,7 +130,9 @@ def register_routes(app):
         directory = current_app.config["OUTPUT_DIR_MP3"] if filetype == "mp3" else current_app.config["OUTPUT_DIR_MP4"]
         
         # Build the full path
-        filepath = os.path.join(directory, filename)
+        filepath = safe_join(directory, filename)
+        if not filepath or os.path.islink(filepath):
+            return jsonify(success=False, error="Invalid filename"), 400
         
         # Check if file exists and delete it
         if os.path.exists(filepath):
@@ -149,6 +145,25 @@ def register_routes(app):
                 return jsonify({"success": False, "error": str(e)}), 500
         else:
             return jsonify({"success": False, "error": "File not found"}), 404
+
+    @app.route("/clear", methods=["POST"])
+    def clear_all():
+        """Delete every listed file and forget finished jobs; running jobs are kept."""
+        mp3_files, mp4_files = get_filtered_files()
+        failed = []
+        for directory, names in ((current_app.config["OUTPUT_DIR_MP3"], mp3_files), (current_app.config["OUTPUT_DIR_MP4"], mp4_files)):
+            for name in names:
+                path = os.path.join(directory, name)
+                try:
+                    os.remove(path)  # removes a symlink itself, never its target
+                except OSError:
+                    failed.append(name)
+        for key in [k for k, v in active_downloads.items() if v["status"] != "downloading"]:
+            del active_downloads[key]
+        notify_clients()
+        if failed:
+            return jsonify(success=False, error=f"Could not delete: {', '.join(failed)}"), 500
+        return jsonify(success=True)
 
     @app.route("/api/file-list")
     def file_list():

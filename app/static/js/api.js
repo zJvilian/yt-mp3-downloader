@@ -31,6 +31,15 @@ function deleteFile(type, filename, itemId) {
   }
 }
 
+// Delete all downloaded files; the SSE/polling update refreshes the lists
+function clearAll() {
+  if (!confirm("Delete ALL downloaded MP3 and MP4 files? This cannot be undone.")) return;
+  fetch('/clear', { method: 'POST' })
+    .then(response => response.json())
+    .then(data => { if (!data.success) alert(data.error || 'Failed to clear downloads.'); })
+    .catch(() => alert('Failed to clear downloads. Please try again.'));
+}
+
 // Function for download cancellation
 function cancelDownload(downloadId) {
   if (confirm("Are you sure you want to cancel this download?")) {

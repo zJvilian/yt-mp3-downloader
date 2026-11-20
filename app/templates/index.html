@@ -24,6 +24,7 @@
   <!-- Video.js and modal styles -->
   <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
   <link rel="stylesheet" href="{{ url_for('static', filename='css/video.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/refresh.css') }}">
 </head>
 <body class="yt-body">
 
@@ -61,21 +62,30 @@
       {% endfor %}
     {% endwith %}
 
+    <div class="hero"><span class="eyebrow">YOUR PERSONAL MEDIA LIBRARY</span><h1>Good media. Yours to keep.</h1><p>Save audio and video from your favorite places. Play it all here.</p></div>
     <!-- Download form -->
-    <form method="post" class="yt-form">
+    <form method="post" class="yt-form" id="download-form">
       <input
-        type="url" name="url"
+        aria-label="Media URL" type="url" name="url"
         placeholder="Enter URL from YouTube, SoundCloud, Vimeo, etc."
         class="yt-input"
         required
       >
-      <select name="format" class="yt-select">
+      <select aria-label="Download format" name="format" class="yt-select">
         <option value="mp3">MP3 (audio)</option>
         <option value="mp4">MP4 (video)</option>
       </select>
       <button class="yt-button">Download</button>
     </form>
 
+    <details class="settings"><summary>Download settings <span>Quality & preferences</span></summary>
+      <p>Saved in this browser and applied to new downloads.</p><div class="settings-grid">
+      <label>Audio quality<select form="download-form" name="quality"><option value="128">128 kbps · smaller files</option><option value="192" selected>192 kbps · balanced</option><option value="320">320 kbps · highest</option></select></label>
+      <label>Maximum video resolution<select form="download-form" name="height"><option value="720">720p</option><option value="1080" selected>1080p</option><option value="2160">4K</option></select></label>
+      <label class="playlist-setting"><input form="download-form" type="checkbox" name="playlist"> Download entire playlists</label></div>
+    </details>
+    <button type="button" class="yt-button" id="clear-all" onclick="clearAll()">Clear all downloads</button>
+    <div id="job-status" role="status" aria-live="polite"></div>
     <!-- Global Player HTML Structure -->
     <div id="global-player-container">
       <div class="yt-global-player-inner">
@@ -180,7 +190,7 @@
               ><img src="{{ url_for('static', filename='img/download.svg') }}" alt="Download"></a>
               <button
                 class="yt-btn yt-btn-delete"
-                onclick="deleteFile('mp3', '{{ f }}', 'mp3-item-{{ loop.index }}')"
+                onclick='deleteFile("mp3", {{ f|tojson }}, "mp3-item-{{ loop.index }}")' 
                 aria-label="Delete"
               ><img src="{{ url_for('static', filename='img/trash.svg') }}" alt="Delete"></button>
             </div>
@@ -218,7 +228,7 @@
               ><img src="{{ url_for('static', filename='img/download.svg') }}" alt="Download"></a>
               <button
                 class="yt-btn yt-btn-delete"
-                onclick="deleteFile('mp4', '{{ f }}', 'mp4-item-{{ loop.index }}')"
+                onclick='deleteFile("mp4", {{ f|tojson }}, "mp4-item-{{ loop.index }}")' 
                 aria-label="Delete"
               ><img src="{{ url_for('static', filename='img/trash.svg') }}" alt="Delete"></button>
             </div>
@@ -250,5 +260,6 @@
   <script src="{{ url_for('static', filename='js/live-updates.js') }}"></script>
   <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
   <script src="{{ url_for('static', filename='js/video-player.js') }}"></script>
+<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 </body>
 </html>

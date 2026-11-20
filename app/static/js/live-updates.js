@@ -70,6 +70,14 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Update active downloads
     updateActiveDownloads(data.active_downloads);
+    const status = document.getElementById('job-status');
+    status.replaceChildren();
+    for (const job of Object.values(data.active_downloads)) {
+      if (job.status === 'downloading') continue;
+      const message = document.createElement('p');
+      message.textContent = `${job.status}: ${job.error || job.url}`;
+      status.appendChild(message);
+    }
   }
   
   function updateFileList(listId, files, createItemFunc) {
@@ -120,6 +128,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
   function createMP3Item(filename, index) {
     const li = document.createElement('li');
     li.className = 'yt-list-item';
@@ -128,10 +139,10 @@ document.addEventListener("DOMContentLoaded", () => {
       <button
         class="yt-btn yt-btn-play"
         data-audio-src="/mp3s/${encodeURIComponent(filename)}"
-        data-audio-title="${filename}"
+        data-audio-title="${escapeHTML(filename)}"
         aria-label="Play/Pause"
       ><img src="/static/img/play.svg" alt="Play"></button>
-      <span class="yt-filename">${filename}</span>
+      <span class="yt-filename">${escapeHTML(filename)}</span>
       <div class="yt-item-actions">
         <a
           href="/mp3s/${encodeURIComponent(filename)}"
@@ -141,11 +152,13 @@ document.addEventListener("DOMContentLoaded", () => {
         ><img src="/static/img/download.svg" alt="Download"></a>
         <button
           class="yt-btn yt-btn-delete"
-          onclick="deleteFile('mp3', '${filename}', 'mp3-item-${index + 1}')"
+
           aria-label="Delete"
         ><img src="/static/img/trash.svg" alt="Delete"></button>
       </div>
     `;
+    li.id = `file-${crypto.randomUUID()}`;
+    li.querySelector('.yt-btn-delete').addEventListener('click', () => deleteFile(li.querySelector('.yt-btn-video-play') ? 'mp4' : 'mp3', filename, li.id));
     // Animation for new items
     li.style.animation = 'fadeIn 0.3s ease-in-out';
     
@@ -166,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data-video-src="/mp4s/${encodeURIComponent(filename)}"
         aria-label="Play Video"
       ><img src="/static/img/play.svg" alt="Play"></button>
-      <span class="yt-filename">${filename}</span>
+      <span class="yt-filename">${escapeHTML(filename)}</span>
       <div class="yt-item-actions">
         <a
           href="/mp4s/${encodeURIComponent(filename)}"
@@ -176,11 +189,13 @@ document.addEventListener("DOMContentLoaded", () => {
         ><img src="/static/img/download.svg" alt="Download"></a>
         <button
           class="yt-btn yt-btn-delete"
-          onclick="deleteFile('mp4', '${filename}', 'mp4-item-${index + 1}')"
+
           aria-label="Delete"
         ><img src="/static/img/trash.svg" alt="Delete"></button>
       </div>
     `;
+    li.id = `file-${crypto.randomUUID()}`;
+    li.querySelector('.yt-btn-delete').addEventListener('click', () => deleteFile(li.querySelector('.yt-btn-video-play') ? 'mp4' : 'mp3', filename, li.id));
     // Animation for new items
     li.style.animation = 'fadeIn 0.3s ease-in-out';
     const playBtn = li.querySelector('.yt-btn-video-play');
@@ -231,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="loader-square"></div>
               <div class="loader-square"></div>
             </div>
-            <span class="yt-filename">${download.url} (${download.format})</span>
+            <span class="yt-filename">${escapeHTML(download.url)} (${download.format})</span>
             <span class="download-progress" id="progress-${id}">${progressText}</span>
             <button
               class="yt-btn yt-btn-cancel"

@@ -25,3 +25,10 @@ mp4s/
 *.mp4
 mp3s/
 *.mp3
+
+.venv/
+__pycache__/
+
+# secrets: never commit
+.env
+cookies.txt

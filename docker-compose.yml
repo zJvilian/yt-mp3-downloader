@@ -1,9 +1,13 @@
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile
     container_name: yt2mp3
+    restart: unless-stopped
+    mem_limit: 1g
     ports:
-      - "5000:5000"
+      - "${BIND_ADDR:-127.0.0.1}:5000:5000"  # set BIND_ADDR in .env to expose on a server's LAN IP
     env_file:
       - .env        # optional, for FLASK_SECRET
     environment:

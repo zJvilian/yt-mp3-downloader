@@ -39,7 +39,7 @@ def handle_event_stream(active_downloads):
         data = {
             "mp3_files": mp3_files,
             "mp4_files": mp4_files,
-            "active_downloads": {k: v for k, v in active_downloads.items() if v["status"] == "downloading"},
+            "active_downloads": {k: v for k, v in list(active_downloads.items()) },
             "type": "initial"
         }
         
@@ -60,7 +60,7 @@ def handle_event_stream(active_downloads):
                 data = {
                     "mp3_files": mp3_files,
                     "mp4_files": mp4_files,
-                    "active_downloads": {k: v for k, v in active_downloads.items() if v["status"] == "downloading"},
+                    "active_downloads": {k: v for k, v in list(active_downloads.items()) },
                     "type": "update"
                 }
                 
@@ -84,6 +84,6 @@ def get_files_response(active_downloads):
     return {
         "mp3_files": mp3_files,
         "mp4_files": mp4_files,
-        "active_downloads": {k: v for k, v in active_downloads.items() if v["status"] == "downloading"},
+        "active_downloads": {k: v for k, v in list(active_downloads.items()) },
         "type": "update"
     }

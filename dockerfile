@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 5000
 ENV FLASK_APP=app
 
-CMD ["sh", "-c", "mkdir -p /app/mp3s /app/mp4s && flask run --host=0.0.0.0 --port=5000"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "8", "--timeout", "120", "app:app"]
