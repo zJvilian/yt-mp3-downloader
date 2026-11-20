@@ -1,0 +1,112 @@
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(60rem 30rem at 50% -10rem, color-mix(in oklab, var(--wa-color-brand-fill-normal) 70%, transparent), transparent),
+    var(--wa-color-surface-lowered);
+}
+body:has(#player:not([hidden])) { padding-bottom: 9rem; }
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--wa-space-s) max(var(--wa-space-l), calc((100% - 56rem) / 2));
+  background: color-mix(in oklab, var(--wa-color-surface-default) 75%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--wa-space-xs);
+  font-weight: var(--wa-font-weight-bold);
+  font-size: var(--wa-font-size-l);
+  color: var(--wa-color-text-normal);
+  text-decoration: none;
+}
+
+.page {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: var(--wa-space-2xl) var(--wa-space-l);
+  display: flex;
+  flex-direction: column;
+  gap: var(--wa-space-xl);
+}
+.stack { display: flex; flex-direction: column; gap: var(--wa-space-s); }
+.stack:empty { display: none; }
+h2 { margin: 0; font-size: var(--wa-font-size-l); }
+
+.hero { text-align: center; }
+.hero h1 { margin: 0 0 var(--wa-space-xs); font-size: clamp(2rem, 6vw, 3.25rem); letter-spacing: -0.03em; line-height: 1.1; }
+.hero p { margin: 0; color: var(--wa-color-text-quiet); }
+
+.download-card { box-shadow: var(--wa-shadow-m); }
+.download-form { display: flex; flex-direction: column; gap: var(--wa-space-m); }
+.download-actions { display: flex; gap: var(--wa-space-m); justify-content: space-between; flex-wrap: wrap; }
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--wa-space-m); align-items: end; }
+wa-details { margin-top: var(--wa-space-s); }
+
+.section-head { display: flex; align-items: center; justify-content: space-between; }
+
+/* Lists of files and running downloads */
+.rows > li { margin: 0; }
+.rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--wa-space-2xs); }
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--wa-space-s);
+  padding: var(--wa-space-xs) var(--wa-space-s);
+  border-radius: var(--wa-border-radius-l);
+  background: var(--wa-color-surface-default);
+  border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+  transition: border-color var(--wa-transition-fast), background var(--wa-transition-fast);
+}
+.row:hover { border-color: var(--wa-color-brand-border-normal); }
+.row.playing { border-color: var(--wa-color-brand-border-loud); background: var(--wa-color-brand-fill-quiet); }
+.row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--wa-space-2xs); }
+.row-active wa-progress-bar { --track-height: 0.375rem; }
+.empty { padding: var(--wa-space-xl); text-align: center; color: var(--wa-color-text-quiet); }
+wa-tab-panel { --padding: var(--wa-space-m) 0 0; }
+
+.footnote { text-align: center; font-size: var(--wa-font-size-s); color: var(--wa-color-text-quiet); }
+
+/* Bottom audio player */
+.player {
+  position: fixed;
+  inset: auto var(--wa-space-s) var(--wa-space-s);
+  z-index: 20;
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: var(--wa-space-s) var(--wa-space-m) calc(var(--wa-space-s) + env(safe-area-inset-bottom));
+  border-radius: var(--wa-border-radius-l);
+  background: color-mix(in oklab, var(--wa-color-surface-raised) 94%, transparent);
+  backdrop-filter: blur(16px);
+  border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+  box-shadow: var(--wa-shadow-l);
+}
+.player[hidden] { display: none; }
+.player-main { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--wa-space-m); }
+.player-title { font-weight: var(--wa-font-weight-semibold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-buttons, .player-volume { display: flex; align-items: center; gap: var(--wa-space-2xs); }
+.player-volume { justify-content: end; }
+.player-volume wa-slider { width: 7rem; }
+.player-seek { display: flex; align-items: center; gap: var(--wa-space-s); font-size: var(--wa-font-size-s); color: var(--wa-color-text-quiet); font-variant-numeric: tabular-nums; }
+.player-seek wa-slider { flex: 1; }
+
+#video-dialog { --width: min(64rem, 100vw); }
+#video { width: 100%; max-height: 75vh; border-radius: var(--wa-border-radius-m); background: #000; }
+
+@media (max-width: 640px) {
+  .page { padding: var(--wa-space-l) var(--wa-space-m); gap: var(--wa-space-l); }
+  .download-actions > * { flex: 1 1 100%; }
+  .download-actions wa-radio-group::part(form-control-input) { width: 100%; }
+  .download-actions wa-radio { flex: 1; white-space: nowrap; }
+  .player-main { grid-template-columns: 1fr auto; }
+  .player-volume { display: none; } /* phones use hardware volume keys */
+}

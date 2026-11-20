@@ -1,265 +1,154 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="wa-cloak wa-palette-bright wa-brand-red">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Universal Media Downloader</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap"
-    rel="stylesheet"
-  >
-  
-  <!-- CSS files -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/player.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme-switch.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
-  <!-- Mobile specific overrides -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}" media="(max-width: 640px)">
-  <!-- Video.js and modal styles -->
-  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/video.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/refresh.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='img/main-logo.png') }}">
+  <script>
+    // Set the theme before first paint so dark mode never flashes white
+    document.documentElement.classList.toggle('wa-dark', (localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark');
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.15.0/dist-cdn/styles/webawesome.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.15.0/dist-cdn/styles/color/palettes/bright.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.15.0/dist-cdn/webawesome.loader.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 </head>
-<body class="yt-body">
-
-  <!-- Top bar -->
-  <header class="yt-header">
-    <div class="yt-container">
-      <a href="/" class="yt-logo">
-        <img src="{{ url_for('static', filename='img/main-logo.png') }}" alt="Universal Media Downloader Logo" class="yt-logo-icon">
-        Universal Media Downloader
-      </a>
-      <!-- Theme switch remains unchanged -->
-      <label class="switch" title="Toggle dark/light mode">
-        <input id="theme-checkbox" type="checkbox" />
-        <span class="slider">
-          <div class="star star_1"></div>
-          <div class="star star_2"></div>
-          <div class="star star_3"></div>
-          <svg viewBox="0 0 16 16" class="cloud_1 cloud">
-            <path
-              transform="matrix(.77976 0 0 .78395-299.99-418.63)"
-              fill="#fff"
-              d="m391.84 540.91c-.421-.329-.949-.524-1.523-.524-1.351 0-2.451 1.084-2.485 2.435-1.395.526-2.388 1.88-2.388 3.466 0 1.874 1.385 3.423 3.182 3.667v.034h12.73v-.006c1.775-.104 3.182-1.584 3.182-3.395 0-1.747-1.309-3.186-2.994-3.379.007-.106.011-.214.011-.322 0-2.707-2.271-4.901-5.072-4.901-2.073 0-3.856 1.202-4.643 2.925"
-            ></path>
-          </svg>
-        </span>
-      </label>
-    </div>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand">
+      <img src="{{ url_for('static', filename='img/main-logo.png') }}" alt="" width="36" height="36">
+      <span>Media Downloader</span>
+    </a>
+    <wa-button id="theme-toggle" appearance="plain" size="l" title="Toggle dark mode">
+      <wa-icon name="circle-half-stroke" label="Toggle dark mode"></wa-icon>
+    </wa-button>
   </header>
 
-  <main class="yt-container">
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages() %}
-      {% for msg in messages %}
-        <div class="yt-alert">{{ msg }}</div>
-      {% endfor %}
-    {% endwith %}
+  <main class="page">
+    {% for msg in get_flashed_messages() %}
+      <wa-callout variant="danger"><wa-icon slot="icon" name="circle-exclamation"></wa-icon>{{ msg }}</wa-callout>
+    {% endfor %}
 
-    <div class="hero"><span class="eyebrow">YOUR PERSONAL MEDIA LIBRARY</span><h1>Good media. Yours to keep.</h1><p>Save audio and video from your favorite places. Play it all here.</p></div>
-    <!-- Download form -->
-    <form method="post" class="yt-form" id="download-form">
-      <input
-        aria-label="Media URL" type="url" name="url"
-        placeholder="Enter URL from YouTube, SoundCloud, Vimeo, etc."
-        class="yt-input"
-        required
-      >
-      <select aria-label="Download format" name="format" class="yt-select">
-        <option value="mp3">MP3 (audio)</option>
-        <option value="mp4">MP4 (video)</option>
-      </select>
-      <button class="yt-button">Download</button>
-    </form>
+    <section class="hero">
+      <h1>Good media. Yours to keep.</h1>
+      <p>Paste a link from YouTube, SoundCloud, Vimeo and hundreds more. Play it right here.</p>
+    </section>
 
-    <details class="settings"><summary>Download settings <span>Quality & preferences</span></summary>
-      <p>Saved in this browser and applied to new downloads.</p><div class="settings-grid">
-      <label>Audio quality<select form="download-form" name="quality"><option value="128">128 kbps · smaller files</option><option value="192" selected>192 kbps · balanced</option><option value="320">320 kbps · highest</option></select></label>
-      <label>Maximum video resolution<select form="download-form" name="height"><option value="720">720p</option><option value="1080" selected>1080p</option><option value="2160">4K</option></select></label>
-      <label class="playlist-setting"><input form="download-form" type="checkbox" name="playlist"> Download entire playlists</label></div>
-    </details>
-    <button type="button" class="yt-button" id="clear-all" onclick="clearAll()">Clear all downloads</button>
-    <div id="job-status" role="status" aria-live="polite"></div>
-    <!-- Global Player HTML Structure -->
-    <div id="global-player-container">
-      <div class="yt-global-player-inner">
-        <div class="yt-global-player-art">🎵</div>
-        <div class="yt-global-player-info">
-          <h3 class="yt-global-player-title" id="now-playing-title">Select a track to play</h3>
-          
-          <!-- REMOVE the centered controls from here -->
-          
-          <div class="yt-global-player-progress">
-            <span class="yt-global-player-time" id="current-time">0:00</span>
-            <div class="yt-progress">
-              <div class="yt-progress-bar" id="audio-progress"></div>
-              <div class="yt-progress-grabber" id="audio-progress-grabber"></div>
-            </div>
-            <span class="yt-global-player-time" id="duration">0:00</span>
-          </div>
+    <wa-card class="download-card">
+      <form method="post" id="download-form" class="download-form">
+        <wa-input type="url" name="url" required size="l" placeholder="https://youtube.com/watch?v=…" label="Media link" with-clear>
+          <wa-icon slot="start" name="link"></wa-icon>
+        </wa-input>
+        <div class="download-actions">
+          <wa-radio-group name="format" value="mp3" orientation="horizontal" size="l" aria-label="Download format" data-persist>
+            <wa-radio appearance="button" value="mp3"><wa-icon name="music"></wa-icon> Audio</wa-radio>
+            <wa-radio appearance="button" value="mp4"><wa-icon name="film"></wa-icon> Video</wa-radio>
+          </wa-radio-group>
+          <wa-button type="submit" variant="brand" size="l">
+            <wa-icon slot="start" name="download"></wa-icon> Download
+          </wa-button>
         </div>
-
-        <!-- ADD the controls here alongside volume -->
-        <div class="yt-global-player-controls">
-          <div class="yt-player-centered-controls">
-            <button class="yt-player-btn" id="previous-track">
-              <img src="{{ url_for('static', filename='img/rewind.svg') }}" alt="Previous">
-            </button>
-            <button class="yt-player-btn yt-player-btn-play" id="play-pause-global">
-              <img src="{{ url_for('static', filename='img/play.svg') }}" alt="Play">
-            </button>
-            <button class="yt-player-btn" id="next-track">
-              <img src="{{ url_for('static', filename='img/forward.svg') }}" alt="Next">
-            </button>
-          </div>
-          <div class="yt-volume-control">
-            <button class="yt-player-btn" id="mute-button">
-              <img src="{{ url_for('static', filename='img/volume.svg') }}" alt="Volume">
-            </button>
-            <div class="yt-progress" id="volume-slider">
-              <div class="yt-progress-bar" style="width: 100%"></div>
-              <div class="yt-progress-grabber" id="volume-grabber"></div>
-            </div>
-          </div>
+      </form>
+      <wa-details summary="Download settings" appearance="plain" icon-placement="start">
+        <div class="settings-grid">
+          <wa-select form="download-form" name="quality" value="192" label="Audio quality" data-persist>
+            <wa-option value="128">128 kbps · smaller files</wa-option>
+            <wa-option value="192">192 kbps · balanced</wa-option>
+            <wa-option value="320">320 kbps · highest</wa-option>
+          </wa-select>
+          <wa-select form="download-form" name="height" value="1080" label="Max video resolution" data-persist>
+            <wa-option value="720">720p</wa-option>
+            <wa-option value="1080">1080p</wa-option>
+            <wa-option value="2160">4K</wa-option>
+          </wa-select>
+          <wa-switch form="download-form" name="playlist" value="on" data-persist>Download entire playlists</wa-switch>
         </div>
+      </wa-details>
+    </wa-card>
+
+    <div id="job-status" role="status" aria-live="polite" class="stack"></div>
+
+    <section id="active-section" class="stack" hidden>
+      <h2>In progress</h2>
+      <ul id="active-list" class="rows"></ul>
+    </section>
+
+    <section class="stack">
+      <div class="section-head">
+        <h2>Library</h2>
+        <wa-button id="clear-all" size="s" appearance="outlined" variant="danger">
+          <wa-icon slot="start" name="trash-can"></wa-icon> Clear all
+        </wa-button>
       </div>
-      <audio id="global-audio-player"></audio>
-    </div>
-
-    <!-- Active Downloads -->
-    <section id="active-downloads-section" {% if not active_downloads %}style="display: none"{% endif %}>
-      <h2 class="yt-section-title">Downloads in Progress</h2>
-      <ul class="yt-list" id="active-downloads-list">
-        {% for id, download in active_downloads.items() %}
-          {% if download.status == "downloading" %}
-            <li class="yt-list-item" id="download-{{ id }}">
-              <!-- Replace hourglass emoji with the square loader -->
-              <div class="loader">
-                <div class="loader-square"></div>
-                <div class="loader-square"></div>
-                <div class="loader-square"></div>
-                <div class="loader-square"></div>
-                <div class="loader-square"></div>
-                <div class="loader-square"></div>
-                <div class="loader-square"></div>
-              </div>
-              <span class="yt-filename">{{ download.url }} ({{ download.format }})</span>
-              <span class="download-progress" id="progress-{{ id }}">{{ download.current }}/{{ download.total }}</span>
-              <button
-                class="yt-btn yt-btn-cancel"
-                data-download-id="{{ id }}"
-                aria-label="Cancel"
-                onclick="cancelDownload('{{ id }}')"
-              >✖</button>
-            </li>
-          {% endif %}
-        {% endfor %}
-      </ul>
+      <wa-tab-group id="library">
+        <wa-tab panel="mp3"><wa-icon name="music"></wa-icon>&nbsp;Audio&nbsp;<wa-badge pill appearance="filled" variant="neutral" id="mp3-count">0</wa-badge></wa-tab>
+        <wa-tab panel="mp4"><wa-icon name="film"></wa-icon>&nbsp;Video&nbsp;<wa-badge pill appearance="filled" variant="neutral" id="mp4-count">0</wa-badge></wa-tab>
+        <wa-tab-panel name="mp3"><ul id="mp3-list" class="rows" data-type="mp3"></ul></wa-tab-panel>
+        <wa-tab-panel name="mp4"><ul id="mp4-list" class="rows" data-type="mp4"></ul></wa-tab-panel>
+      </wa-tab-group>
     </section>
 
-    <!-- Downloaded MP3s -->
-    <section id="mp3-section">
-      <h2 class="yt-section-title collapsible" onclick="toggleSection('mp3-list')">
-        Downloaded MP3s
-        <span class="collapse-indicator">▼</span>
-      </h2>
-      <ul class="yt-list" id="mp3-list">
-        {% for f in mp3_files %}
-          <li class="yt-list-item" id="mp3-item-{{ loop.index }}">
-            <button
-              class="yt-btn yt-btn-play"
-              data-audio-src="{{ url_for('serve_mp3', filename=f) }}"
-              data-audio-title="{{ f }}"
-              aria-label="Play/Pause"
-            >
-              <img src="{{ url_for('static', filename='img/play.svg') }}" alt="Play">
-            </button>
-            <span class="yt-filename">{{ f }}</span>
-            <div class="yt-item-actions">
-              <a
-                href="{{ url_for('serve_mp3', filename=f) }}"
-                download
-                class="yt-btn yt-btn-download"
-                aria-label="Download"
-              ><img src="{{ url_for('static', filename='img/download.svg') }}" alt="Download"></a>
-              <button
-                class="yt-btn yt-btn-delete"
-                onclick='deleteFile("mp3", {{ f|tojson }}, "mp3-item-{{ loop.index }}")' 
-                aria-label="Delete"
-              ><img src="{{ url_for('static', filename='img/trash.svg') }}" alt="Delete"></button>
-            </div>
-          </li>
-        {% else %}
-          <li class="yt-list-empty">No MP3s yet.</li>
-        {% endfor %}
-      </ul>
-    </section>
-
-    <!-- Downloaded MP4s -->
-    <section id="mp4-section">
-      <h2 class="yt-section-title collapsible" onclick="toggleSection('mp4-list')">
-        Downloaded MP4s
-        <span class="collapse-indicator">▼</span>
-      </h2>
-      <ul class="yt-list" id="mp4-list">
-        {% for f in mp4_files %}
-          <li class="yt-list-item" id="mp4-item-{{ loop.index }}">
-            <button
-              class="yt-btn yt-btn-play yt-btn-video-play"
-              data-video-src="{{ url_for('serve_mp4', filename=f) }}"
-              data-video-title="{{ f }}"
-              aria-label="Play Video"
-            >
-              <img src="{{ url_for('static', filename='img/play.svg') }}" alt="Play">
-            </button>
-            <span class="yt-filename">{{ f }}</span>
-            <div class="yt-item-actions">
-              <a
-                href="{{ url_for('serve_mp4', filename=f) }}"
-                download
-                class="yt-btn yt-btn-download"
-                aria-label="Download"
-              ><img src="{{ url_for('static', filename='img/download.svg') }}" alt="Download"></a>
-              <button
-                class="yt-btn yt-btn-delete"
-                onclick='deleteFile("mp4", {{ f|tojson }}, "mp4-item-{{ loop.index }}")' 
-                aria-label="Delete"
-              ><img src="{{ url_for('static', filename='img/trash.svg') }}" alt="Delete"></button>
-            </div>
-          </li>
-        {% else %}
-          <li class="yt-list-empty">No MP4s yet.</li>
-        {% endfor %}
-      </ul>
-    </section>
-
-    <div class="supported-platforms">
-      <p>Supported platforms include: YouTube, SoundCloud, TikTok, Twitter, Instagram, Facebook, Vimeo, Twitch, and <a href="#" title="Click to see all supported sites">hundreds more</a>.</p>
-    </div>
+    <p class="footnote">Works with YouTube, SoundCloud, TikTok, X, Instagram, Facebook, Vimeo, Twitch and
+      <a href="https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md" target="_blank" rel="noopener">hundreds more</a>.</p>
   </main>
 
-  <!-- Video player modal -->
-  <div id="video-modal" class="video-modal">
-    <div class="video-container">
-      <button id="video-modal-close" class="video-modal-close">&times;</button>
-      <video id="video-player" class="video-js vjs-default-skin vjs-fluid" controls preload="auto"></video>
+  <!-- Audio player bar, shown once a track is picked -->
+  <div id="player" class="player" hidden>
+    <div class="player-main">
+      <div class="player-title" id="now-playing"></div>
+      <div class="player-buttons">
+        <wa-button id="prev" appearance="plain"><wa-icon name="backward-step" label="Previous"></wa-icon></wa-button>
+        <wa-button id="play" variant="brand" pill><wa-icon name="play" label="Play"></wa-icon></wa-button>
+        <wa-button id="next" appearance="plain"><wa-icon name="forward-step" label="Next"></wa-icon></wa-button>
+      </div>
+      <div class="player-volume">
+        <wa-button id="mute" appearance="plain"><wa-icon name="volume-high" label="Mute"></wa-icon></wa-button>
+        <wa-slider id="volume" value="100" size="s" aria-label="Volume"></wa-slider>
+      </div>
     </div>
+    <div class="player-seek">
+      <span id="time-current">0:00</span>
+      <wa-slider id="seek" value="0" max="1" step="0.1" size="s" aria-label="Seek"></wa-slider>
+      <span id="time-total">0:00</span>
+    </div>
+    <audio id="audio" preload="metadata"></audio>
   </div>
 
-  <!-- JavaScript files -->
-  <script src="{{ url_for('static', filename='js/player.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/ui.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/live-updates.js') }}"></script>
-  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
-  <script src="{{ url_for('static', filename='js/video-player.js') }}"></script>
-<script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+  <wa-dialog id="video-dialog" label="Video" light-dismiss>
+    <video id="video" controls playsinline></video>
+  </wa-dialog>
+
+  <wa-dialog id="confirm-dialog" label="Are you sure?">
+    <p id="confirm-message"></p>
+    <wa-button slot="footer" appearance="plain" data-dialog="close">Cancel</wa-button>
+    <wa-button slot="footer" variant="danger" id="confirm-ok">Delete</wa-button>
+  </wa-dialog>
+
+  <wa-toast id="toaster" placement="bottom-center"></wa-toast>
+
+  <template id="file-row">
+    <li class="row">
+      <wa-button class="row-play" data-action="play" appearance="filled" variant="brand" pill size="s"><wa-icon name="play" label="Play"></wa-icon></wa-button>
+      <span class="row-name"></span>
+      <wa-button class="row-download" appearance="plain" size="s"><wa-icon name="download" label="Download"></wa-icon></wa-button>
+      <wa-button data-action="delete" appearance="plain" size="s" variant="danger"><wa-icon name="trash-can" label="Delete"></wa-icon></wa-button>
+    </li>
+  </template>
+
+  <template id="active-row">
+    <li class="row row-active">
+      <wa-spinner></wa-spinner>
+      <div class="row-body">
+        <span class="row-name"></span>
+        <wa-progress-bar></wa-progress-bar>
+      </div>
+      <wa-tag size="s" appearance="filled"></wa-tag>
+      <wa-button data-action="cancel" appearance="plain" size="s"><wa-icon name="xmark" label="Cancel download"></wa-icon></wa-button>
+    </li>
+  </template>
+
+  <script id="initial-data" type="application/json">{{ {"mp3_files": mp3_files, "mp4_files": mp4_files, "active_downloads": active_downloads}|tojson }}</script>
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </body>
 </html>
