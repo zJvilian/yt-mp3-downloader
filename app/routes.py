@@ -1,11 +1,13 @@
 import os
 import uuid
 import threading
+import tempfile
+import zipfile
 from urllib.parse import urlsplit
 from werkzeug.utils import safe_join
 from flask import (
     current_app, render_template, request, jsonify, Response,
-    redirect, url_for, flash, send_from_directory, stream_with_context
+    redirect, url_for, flash, send_from_directory, send_file, stream_with_context
 )
 from .downloader import download_youtube, cancel_download
 from .auto_reload import (
@@ -164,6 +166,22 @@ def register_routes(app):
         if failed:
             return jsonify(success=False, error=f"Could not delete: {', '.join(failed)}"), 500
         return jsonify(success=True)
+
+    @app.route("/download-all/<filetype>")
+    def download_all(filetype):
+        """Send every listed file of one type as a single zip."""
+        if filetype not in ("mp3", "mp4"):
+            return jsonify(success=False, error="Invalid file type"), 400
+        directory = current_app.config["OUTPUT_DIR_MP3" if filetype == "mp3" else "OUTPUT_DIR_MP4"]
+        names = get_filtered_files()[0 if filetype == "mp3" else 1]
+        archive = tempfile.TemporaryFile()  # on disk: libraries can be larger than RAM
+        with zipfile.ZipFile(archive, "w", zipfile.ZIP_STORED) as zf:  # media is already compressed
+            for name in names:
+                path = os.path.join(directory, name)
+                if not os.path.islink(path):  # never ship a symlink's target
+                    zf.write(path, name)
+        archive.seek(0)
+        return send_file(archive, mimetype="application/zip", as_attachment=True, download_name=f"{filetype}s.zip")
 
     @app.route("/api/file-list")
     def file_list():

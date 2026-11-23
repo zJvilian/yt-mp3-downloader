@@ -77,9 +77,14 @@
     <section class="stack">
       <div class="section-head">
         <h2>Library</h2>
+        <div class="section-actions">
+        <wa-button id="download-all" size="s" appearance="outlined">
+          <wa-icon slot="start" name="file-zipper"></wa-icon> Download all
+        </wa-button>
         <wa-button id="clear-all" size="s" appearance="outlined" variant="danger">
           <wa-icon slot="start" name="trash-can"></wa-icon> Clear all
         </wa-button>
+        </div>
       </div>
       <wa-tab-group id="library">
         <wa-tab panel="mp3"><wa-icon name="music"></wa-icon>&nbsp;Audio&nbsp;<wa-badge pill appearance="filled" variant="neutral" id="mp3-count">0</wa-badge></wa-tab>

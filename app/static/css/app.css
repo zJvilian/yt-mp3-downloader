@@ -52,6 +52,7 @@ h2 { margin: 0; font-size: var(--wa-font-size-l); }
 wa-details { margin-top: var(--wa-space-s); }
 
 .section-head { display: flex; align-items: center; justify-content: space-between; }
+.section-actions { display: flex; gap: var(--wa-space-xs); }
 
 /* Lists of files and running downloads */
 .rows > li { margin: 0; }

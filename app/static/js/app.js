@@ -166,6 +166,12 @@ $('#active-list').addEventListener('click', async (e) => {
   }
 });
 
+$('#download-all').addEventListener('click', () => {
+  const type = $('#library').active || 'mp3';
+  if (!data[`${type}_files`].length) return toast(`No ${type === 'mp3' ? 'audio' : 'videos'} to download.`, 'neutral');
+  location.href = `/download-all/${type}`;  // attachment response, so the page stays put
+});
+
 $('#clear-all').addEventListener('click', async () => {
   if (await confirmAction('Delete ALL downloaded audio and video files? This cannot be undone.', 'Delete everything')) {
     if (await post('/clear')) toast('Library cleared.', 'success');

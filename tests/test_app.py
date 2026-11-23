@@ -1,3 +1,5 @@
+import io
+import zipfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -39,6 +41,16 @@ class AppTests(unittest.TestCase):
         self.assertTrue(self.client.post('/clear').get_json()['success'])
         self.assertEqual({p.name for p in Path(self.temp.name).iterdir()}, {'keep.txt'})
         self.assertEqual(list(active_downloads), ['busy'])
+
+    def test_download_all_zips_one_type(self):
+        for name in ('a.mp3', 'b.mp3', 'c.mp4'):
+            (Path(self.temp.name) / name).write_bytes(name.encode())
+        response = self.client.get('/download-all/mp3')
+        with zipfile.ZipFile(io.BytesIO(response.data)) as zf:
+            self.assertEqual(sorted(zf.namelist()), ['a.mp3', 'b.mp3'])
+            self.assertEqual(zf.read('a.mp3'), b'a.mp3')
+        response.close()
+        self.assertEqual(self.client.get('/download-all/txt').status_code, 400)
 
     def test_stream_has_app_context(self):
         response = self.client.get('/events', buffered=False)
